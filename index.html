@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>푸꾸옥 가이드 수익 및 행사 관리</title>
-    <!-- OCR(문자 인식)을 위한 Tesseract.js 라이브러리 추가 -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -27,39 +25,6 @@
             font-size: 12px;
             margin-bottom: 15px;
         }
-        
-        /* 탭 네비게이션 스타일 */
-        .tab-nav {
-            display: flex;
-            background: #e2e8f0;
-            border-radius: 8px;
-            padding: 4px;
-            margin-bottom: 20px;
-        }
-        .tab-btn {
-            flex: 1;
-            background: none;
-            border: none;
-            padding: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #555;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-        .tab-btn.active {
-            background: #1a73e8;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
         .section-title {
             background-color: #e8f0fe;
             color: #1a73e8;
@@ -70,6 +35,9 @@
             border-radius: 6px;
             font-size: 14px;
             border-left: 4px solid #1a73e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         table {
             width: 100%;
@@ -89,8 +57,22 @@
         }
         th {
             background-color: #f1f3f4;
+            width: 32%;
         }
-        input[type="number"], input[type="text"], input[type="date"], textarea, select {
+        .team-selector-bar {
+            background: #e8f0fe;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: #1a73e8;
+            gap: 8px;
+        }
+        select, input[type="text"], input[type="date"], textarea {
             width: 100%;
             padding: 6px;
             box-sizing: border-box;
@@ -100,107 +82,61 @@
             border-radius: 4px;
             font-size: 13px;
         }
-        textarea {
-            resize: vertical;
-            height: 190px;
-            font-family: inherit;
-            line-height: 1.4;
-        }
-        .camera-btn-label {
-            display: block;
+        .btn-main {
             background-color: #1a73e8;
             color: white;
-            text-align: center;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        input[type="file"] { display: none; }
-        .preview-container img {
-            max-width: 100%;
-            max-height: 200px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            display: none;
-            margin: 8px auto 0 auto;
-        }
-        .btn-add {
-            background-color: #34a853;
-            color: white;
             border: none;
-            padding: 8px;
+            padding: 6px 12px;
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
-            width: 100%;
-            margin-top: 5px;
-        }
-        .btn-save {
-            background-color: #f9ab00;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            width: 100%;
-            margin-top: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .btn-del {
             background-color: #ea4335;
             color: white;
             border: none;
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 11px;
         }
-        .result-box {
-            background-color: #e6f4ea;
-            border: 1px solid #ceead6;
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 15px;
-        }
-        .result-box h3 {
-            margin-top: 0;
-            color: #137333;
-            font-size: 15px;
-            border-bottom: 1px solid #ceead6;
-            padding-bottom: 5px;
-        }
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 13px;
-            color: #333;
-        }
-        .result-row.highlight {
-            font-weight: bold;
-            font-size: 15px;
-            color: #d93025;
-            margin-top: 6px;
-            border-top: 1px dashed #ceead6;
-            padding-top: 6px;
-        }
-        .age-display {
-            display: block;
+        .age-badge {
+            display: inline-block;
             background: #e8f0fe;
             color: #1a73e8;
-            padding: 4px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
-            margin-top: 4px;
-            text-align: center;
-            border: 1px dashed #b9d3fc;
+            margin-left: 5px;
+        }
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .checklist-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .checklist-box h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #1a73e8;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            margin-bottom: 5px;
+            gap: 6px;
         }
         .calendar-container {
             margin-top: 15px;
@@ -237,31 +173,14 @@
             padding: 3px;
             font-size: 10px;
             background: #181818;
-            position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .calendar-cell:hover {
-            background: #222;
         }
         .day-number {
             font-weight: bold;
             color: #888;
             font-size: 10px;
             margin-bottom: 2px;
-        }
-        .calendar-event-badge {
-            background: #1a73e8;
-            color: white;
-            font-size: 9px;
-            font-weight: bold;
-            padding: 2px 4px;
-            margin-bottom: 2px;
-            border-radius: 4px;
-            text-align: center;
         }
         .calendar-schedule-item {
             background: #262626;
@@ -272,19 +191,6 @@
             margin-top: 2px;
             border-radius: 2px;
             line-height: 1.2;
-            word-break: keep-all;
-        }
-        .team-selector-bar {
-            background: #e8f0fe;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            font-weight: bold;
-            color: #1a73e8;
         }
         .detail-timeline {
             margin-top: 15px;
@@ -311,11 +217,6 @@
             border-bottom: 1px solid #f1f3f4;
             padding-bottom: 5px;
         }
-        .timeline-card-content {
-            font-size: 12px;
-            color: #444;
-            line-height: 1.5;
-        }
         .modal {
             display: none;
             position: fixed;
@@ -333,7 +234,9 @@
             padding: 20px;
             border-radius: 8px;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             color: #333;
         }
@@ -343,246 +246,300 @@
             font-size: 16px;
             margin-bottom: 10px;
         }
-        .ocr-loading {
+        .preset-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: #f8f9fa;
+            border: 1px solid #dcdcdc;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            border-radius: 4px;
             font-size: 12px;
-            color: #e67e22;
-            font-weight: bold;
-            text-align: center;
-            margin-top: 5px;
-            display: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .preset-btn:hover {
+            background: #e8f0fe;
+            border-color: #1a73e8;
+            color: #1a73e8;
         }
     </style>
 </head>
 <body>
 
     <h1>🌴 푸꾸옥 가이드 수익 및 행사 관리</h1>
-    <p class="subtitle">통합 가이드 대시보드 (AI OCR 포함)</p>
+    <p class="subtitle">정산 조건 직접 등록/삭제 관리 버전</p>
 
-    <!-- 탭 메뉴 버튼 -->
-    <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('tab-schedule')">📋 행사지시서 & 고객명단</button>
-        <button class="tab-btn" onclick="switchTab('tab-settlement')">💰 수익 및 정산 관리</button>
-    </div>
-
-    <!-- [탭 1] 행사지시서 & 고객명단 -->
-    <div id="tab-schedule" class="tab-content active">
-        
-        <div class="team-selector-bar">
-            <span>현재 팀: <span id="currentTeamTitle">행사 선택</span></span>
-            <button class="btn-add" style="width: auto; padding: 5px 10px; margin: 0;" onclick="addNewTeam()">＋ 새 행사 등록</button>
+    <!-- 행사 기간 선택 바 -->
+    <div class="team-selector-bar">
+        <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
+            <span>📅 행사 선택:</span>
+            <select id="teamSelectDropdown" onchange="onTeamSelectChange(this)" style="flex: 1; font-weight: bold; color: #1a73e8;"></select>
         </div>
-
-        <div class="section-title">0. 기본 행사 정보 설정 (투어 코드 및 일정)</div>
-        <table>
-            <tr>
-                <th style="width: 35%;">투어 코드</th>
-                <td><input type="text" id="teamCodeInput" value="BVE904ZE5W"></td>
-            </tr>
-            <tr>
-                <th>행사 기간 (시작 ~ 종료)</th>
-                <td>
-                    <input type="date" id="teamStartDate" value="2026-09-17" style="width: 48%; display: inline;"> ~ 
-                    <input type="date" id="teamEndDate" value="2026-09-20" style="width: 48%; display: inline;">
-                </td>
-            </tr>
-        </table>
-
-        <!-- 1. 행사지시서 사진 업로드 + OCR 기능 -->
-        <div class="section-title">1. 행사지시서 사진 촬영 / 업로드 (AI 자동인식)</div>
-        <div style="margin-bottom: 4px;">
-            <label for="guideOrderPhoto" class="camera-btn-label">
-                📸 행사지시서 카메라로 찍기 / 갤러리 선택
-            </label>
-            <input type="file" id="guideOrderPhoto" accept="image/*" capture="environment" onchange="processGuideOrderOCR(event)">
-        </div>
-        <div id="orderOcrLoading" class="ocr-loading">🔄 사진 속 글자를 자동으로 분석 중입니다... 잠시만 기다려주세요!</div>
-        <div class="preview-container">
-            <img id="guideOrderImagePreview" alt="행사지시서 미리보기">
-        </div>
-
-        <div class="section-title" style="margin-top: 15px;">📋 행사지시서 내용</div>
-        <textarea id="guideOrderText">투어 코드: BVE904ZE5W
-일정: 2026-09-17 ~ 2026-09-20 (3박 4일)
-가이드: KO: 박재우 / VN: Thiện (-0378461735)
-인원: ADT 5명, CHD 5명 (총 10명)
-호텔 정보:
- - NOVOTEL (김용석 Superior Twin * 3) - 예약번호: 1090791
- - BEST WESTERN (정진선 DELUXE TWN * 1) - 예약번호: 643000
-정산 조건: 메꾸기 1인 $80(5+5chd) / 회사 5:5 정산 조건 / 옵션가능 / 쇼핑 3회
-기가팁 금액: $50 × 10명 = $500</textarea>
-
-        <!-- 2. 고객 명단 서류 업로드 + OCR 기능 -->
-        <div class="section-title" style="margin-top: 15px;">📷 고객 명단 서류 촬영 / 업로드 (AI 자동인식)</div>
-        <div style="margin-bottom: 4px;">
-            <label for="customerPhoto" class="camera-btn-label">
-                📸 고객 명단/서류 카메라로 찍기 / 갤러리 선택
-            </label>
-            <input type="file" id="customerPhoto" accept="image/*" capture="environment" onchange="processCustomerOCR(event)">
-        </div>
-        <div id="customerOcrLoading" class="ocr-loading">🔄 고객 명단 사진을 분석하여 데이터를 읽어오는 중입니다...</div>
-        <div class="preview-container">
-            <img id="customerImagePreview" alt="고객 서류 미리보기">
-        </div>
-
-        <div class="section-title" style="margin-top: 15px;">👥 고객 명단 및 요청사항 관리</div>
-        <table class="extra-table" id="customerTable">
-            <thead>
-                <tr>
-                    <th style="width: 32%;">고객 성함 (영문 / 한글)</th>
-                    <th style="width: 30%;">생년월일 (1976-01-01)</th>
-                    <th style="width: 15%;">예약번호</th>
-                    <th style="width: 23%;">요청사항</th>
-                </tr>
-            </thead>
-            <tbody id="customerTableBody">
-                <!-- 자바스크립트가 동적 렌더링 -->
-            </tbody>
-        </table>
-        <button class="btn-add" onclick="addNewCustomerRow()">＋ 고객 추가하기</button>
-
-        <!-- 수정 내용 저장 버튼 -->
-        <button class="btn-save" onclick="saveActiveTeamData()">💾 수정 사항 저장 및 반영하기</button>
-
-        <!-- 캘린더 -->
-        <div class="section-title" style="margin-top: 20px;">🗓️ 월별 캘린더 (날짜를 클릭해 일정을 추가·수정하세요)</div>
-        <div class="calendar-container">
-            <div class="calendar-header">2026년 9월 행사 일정표</div>
-            <div class="calendar-grid" id="scheduleCalendarGrid"></div>
-        </div>
-
-        <!-- 일자별 상세 정리 섹션 -->
-        <div class="section-title" style="margin-top: 20px;">📌 일자별 상세 투어 일정 정리</div>
-        <div class="detail-timeline" id="detailTimelineContainer"></div>
-    </div>
-
-    <!-- [탭 2] 수익 및 정산 관리 -->
-    <div id="tab-settlement" class="tab-content">
-        <div class="section-title">0. 정산서 사진 촬영 / 업로드</div>
-        <div style="margin-bottom: 8px;">
-            <label for="settlementPhoto" class="camera-btn-label">
-                📸 정산서 카메라로 찍기 / 갤러리에서 선택
-            </label>
-            <input type="file" id="settlementPhoto" accept="image/*" capture="environment" onchange="previewImage(event, 'imagePreview')">
-        </div>
-        <div class="preview-container">
-            <img id="imagePreview" alt="정산서 미리보기">
-        </div>
-
-        <div class="section-title">1. 팀별 투어 일정 정보</div>
-        <table>
-            <tr>
-                <th style="width: 35%;">행사 인원</th>
-                <td><input type="text" id="tourPax" value="10명" oninput="calculate()"></td>
-            </tr>
-            <tr>
-                <th>마지막 날 기가팁 정산금 ($)</th>
-                <td><input type="number" id="teamGuideIncome" value="500" placeholder="500" oninput="calculate()"></td>
-            </tr>
-        </table>
-
-        <div class="section-title">2. 기타 수입 관리</div>
-        <table class="extra-table" id="extraTable">
-            <thead>
-                <tr>
-                    <th style="width: 35%;">날짜</th>
-                    <th style="width: 35%;">수입 내용</th>
-                    <th style="width: 20%;">금액 ($)</th>
-                    <th style="width: 10%; text-align: center;">관리</th>
-                </tr>
-            </thead>
-            <tbody id="extraTableBody">
-                <tr>
-                    <td><input type="date" value="2026-09-17" onchange="calculate()"></td>
-                    <td><input type="text" value="메꾸기 (5+5chd)" oninput="calculate()"></td>
-                    <td><input type="number" value="800" placeholder="0" oninput="calculate()"></td>
-                    <td style="text-align: center;"><button class="btn-del" onclick="removeRow(this)">삭제</button></td>
-                </tr>
-            </tbody>
-        </table>
-        <button class="btn-add" onclick="addNewEmptyRow()">＋ 기타 수입 항목 등록하기</button>
-
-        <div class="result-box">
-            <h3>📊 이번 팀 정산 및 추가 수입 요약</h3>
-            <div class="result-row">
-                <span>기가팁 정산금 ($50×10명):</span>
-                <span>$<span id="resTeamIncome">500.00</span></span>
-            </div>
-            <div class="result-row">
-                <span>기타 수입 총합계:</span>
-                <span>$<span id="resExtraIncome">800.00</span></span>
-            </div>
-            <div class="result-row highlight">
-                <span>총 수입 합계:</span>
-                <span>$<span id="resTotalFinalIncome">1300.00</span></span>
-            </div>
+        <div style="display: flex; gap: 4px;">
+            <button class="btn-del" onclick="deleteActiveTeam()" title="삭제">🗑️ 삭제</button>
+            <button class="btn-main" style="background-color: #34a853;" onclick="openNewTeamModal()">＋ 새 행사</button>
         </div>
     </div>
 
-    <!-- 일정 편집 모달창 -->
-    <div id="scheduleModal" class="modal">
+    <!-- ✈️ 항공편 및 상세 정보 -->
+    <div class="section-title">
+        <span>✈️ 복수 항공편 및 기본 정보</span>
+        <button class="btn-main" onclick="openEditDirectiveModal()">📝 지시서 수정</button>
+    </div>
+    <table>
+        <tr>
+            <th>항공편 정보 (입/출국)</th>
+            <td id="viewFlightInfo" style="line-height: 1.4;">-</td>
+        </tr>
+        <tr>
+            <th>행사 일정 (기간)</th>
+            <td id="viewDateRange" style="font-weight: bold; color: #1a73e8;">-</td>
+        </tr>
+        <tr>
+            <th>가이드 정보 (한/베)</th>
+            <td id="viewGuideInfo">-</td>
+        </tr>
+        <tr>
+            <th>인원 정보</th>
+            <td id="viewPaxInfo">-</td>
+        </tr>
+        <tr>
+            <th>호텔 및 룸타입 정보</th>
+            <td id="viewHotelInfo" style="line-height: 1.4;">-</td>
+        </tr>
+        <tr>
+            <th>정산 조건 & 기가팁</th>
+            <td id="viewSettlementAndTip">-</td>
+        </tr>
+    </table>
+
+    <!-- 체크리스트 확인사항 영역 -->
+    <div class="checklist-grid">
+        <div class="checklist-box">
+            <h4>📦 포함사항 체크</h4>
+            <div id="viewIncludedList"></div>
+        </div>
+        <div class="checklist-box">
+            <h4>📝 센딩 필수사항 체크</h4>
+            <div id="viewSendingList"></div>
+        </div>
+    </div>
+
+    <!-- 👥 고객 명단 및 특이사항 관리 -->
+    <div class="section-title">
+        <span>👥 고객 명단 및 특이사항 (알레르기/요청)</span>
+        <button class="btn-main" onclick="openEditDirectiveModal()">＋ 고객 편집</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 32%;">고객 성함 (영문 / 한글)</th>
+                <th style="width: 25%;">생년월일 / 나이</th>
+                <th style="width: 15%;">예약번호</th>
+                <th style="width: 28%;">특이사항 / 알레르기</th>
+            </tr>
+        </thead>
+        <tbody id="viewCustomerTableBody"></tbody>
+    </table>
+
+    <!-- 📌 선택된 날짜 기간별 투어 일정 정리 -->
+    <div class="section-title" style="margin-top: 20px;">
+        <span>📌 선택된 날짜 기간별 투어 일정 정리</span>
+    </div>
+    <div class="detail-timeline" id="detailTimelineContainer"></div>
+
+    <!-- 월별 캘린더 -->
+    <div class="section-title" style="margin-top: 20px;">
+        <span>🗓️ 월별 캘린더</span>
+    </div>
+    <div class="calendar-container">
+        <div class="calendar-header" id="calendarHeaderTitle">2026년 9월 행사 일정표</div>
+        <div class="calendar-grid" id="scheduleCalendarGrid"></div>
+    </div>
+
+    <!-- 📝 통합 수정/생성 모달창 -->
+    <div id="directiveModal" class="modal">
         <div class="modal-content">
-            <h3 id="modalDateTitle">날짜 일정 편집</h3>
-            <p style="font-size: 12px; color: #666; margin-bottom: 8px;">이 날짜에 표시될 가이드 일정을 입력하거나 수정하세요.</p>
-            <textarea id="modalScheduleInput" style="height: 100px; margin-bottom: 10px;" placeholder="예: [1일차] 공항 미팅 -> 호텔 휴식"></textarea>
-            <div style="display: flex; gap: 5px;">
-                <button class="btn-add" style="background-color: #1a73e8;" onclick="saveDailySchedule()">저장하기</button>
-                <button class="btn-del" style="flex: 1;" onclick="closeModal()">취소</button>
+            <h3 id="directiveModalTitle">📝 행사 상세 정보 편집</h3>
+            
+            <!-- 항공편 다중 입력 영역 -->
+            <div style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <span style="font-size: 11px; font-weight: bold; color: #1a73e8;">✈️ 항공편 관리 (비행기별 미팅 인원 입력)</span>
+                    <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addFlightRow()">＋항공편추가</button>
+                </div>
+                <div id="modalFlightListContainer" style="display: flex; flex-direction: column; gap: 4px;"></div>
             </div>
+
+            <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                <div style="flex:1;">
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">시작일</label>
+                    <input type="date" id="inputStartDate">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">종료일</label>
+                    <input type="date" id="inputEndDate">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                <div style="flex:1;">
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">🇰🇷 한국 가이드</label>
+                    <select id="selectKoreaGuide"></select>
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">🇻🇳 베트남 가이드 (직접 입력)</label>
+                    <input type="text" id="inputVietnamGuide" placeholder="예: Thiện (-0378461735)" style="font-size: 13px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <span style="font-size: 11px; font-weight: bold; color: #1a73e8;">🏨 호텔 및 룸타입 정보</span>
+                    <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addHotelRow()">＋호텔추가</button>
+                </div>
+                <div id="modalHotelListContainer" style="display: flex; flex-direction: column; gap: 4px;"></div>
+            </div>
+
+            <!-- 포함사항 및 센딩 체크항목 설정 -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; background: #f8f9fa; padding: 8px; border-radius: 4px;">
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">📦 포함사항 (쉼표로 구분)</label>
+                    <input type="text" id="inputIncludedItems" placeholder="혼똠섬, 사파리, 마사지 90분" style="font-size: 11px;">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">📝 센딩 필수사항 (쉼표 구분)</label>
+                    <input type="text" id="inputSendingItems" placeholder="일정변경 동의서, 안전수칙 동의서" style="font-size: 11px;">
+                </div>
+            </div>
+
+            <!-- 정산 조건 관리 영역 (등록/삭제 가능) -->
+            <div style="margin-bottom: 8px; background: #f8f9fa; padding: 8px; border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">💰 정산 조건 선택 및 관리</label>
+                    <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addSettlementOption()">＋조건추가</button>
+                </div>
+                <div style="display: flex; gap: 5px; margin-bottom: 4px;">
+                    <select id="selectSettlementCond" style="flex: 2;"></select>
+                    <button type="button" class="btn-del" style="padding: 2px 6px; font-size: 11px;" onclick="deleteSelectedSettlement()">선택삭제</button>
+                </div>
+                <div id="newSettlementAddArea" style="display: none; gap: 4px; margin-top: 4px;">
+                    <input type="text" id="inputNewSettlementText" placeholder="새로운 정산 조건 입력" style="font-size: 11px; flex: 1;">
+                    <button type="button" class="btn-main" style="padding: 2px 8px; font-size: 11px;" onclick="saveNewSettlementOption()">저장</button>
+                </div>
+            </div>
+
+            <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">기가팁 금액</label>
+            <div style="margin-bottom: 8px;">
+                <input type="text" id="inputGigaTip" placeholder="팁 금액 ($50 × 5명 = $250)" value="$50">
+            </div>
+
+            <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">고객 명단 및 알레르기/특이사항 관리</label>
+            <table style="margin-bottom: 8px;">
+                <thead>
+                    <tr>
+                        <th style="font-size:10px; padding:4px;">성함 (영문 / 한글)</th>
+                        <th style="font-size:10px; padding:4px;">생년월일</th>
+                        <th style="font-size:10px; padding:4px;">예약번호</th>
+                        <th style="font-size:10px; padding:4px;">특이사항/알레르기</th>
+                    </tr>
+                </thead>
+                <tbody id="modalCustomerTableBody"></tbody>
+            </table>
+            <button class="btn-main" style="background-color: #34a853; width: 100%; margin-bottom: 15px;" onclick="addModalCustomerRow()">＋ 고객 추가</button>
+
+            <div style="display: flex; gap: 5px;">
+                <button class="btn-main" style="flex: 1; padding: 10px;" onclick="saveActiveTeamData()">저장 및 반영하기</button>
+                <button class="btn-del" style="flex: 1; padding: 10px; font-size: 13px;" onclick="closeDirectiveModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🗺️ 투어 코스 선택 모달창 -->
+    <div id="schedulePresetModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 8px;">✨ 자주 쓰는 투어 코스 선택</h3>
+            <div id="presetListContainer"></div>
+            <button class="btn-del" style="width: 100%; padding: 8px; margin-top: 10px;" onclick="closePresetModal()">닫기</button>
         </div>
     </div>
 
     <script>
-        let teamsData = [
+        let dropdownOptions = {
+            koreaGuide: JSON.parse(localStorage.getItem('koreaGuideOptions')) || ["박재우", "김가이드", "이한국"],
+            hotelList: JSON.parse(localStorage.getItem('hotelListOptions')) || ["노보텔 (Novotel Phu Quoc)", "JW 메리어트", "인터컨티넨탈"],
+            settlement: JSON.parse(localStorage.getItem('settlementOptions')) || ["메꾸기 1인 $80 / 회사 5:5", "노옵션 / 노쇼핑 / 단독 행사"]
+        };
+
+        let tourPresets = JSON.parse(localStorage.getItem('tourPresetsOptions')) || [
+            "[공항 미팅] ✈️ 공항 픽업 -> 가이드 미팅 -> 🏨 호텔 체크인",
+            "[남섬 투어] 🏝️ 호핑투어 -> 혼똠섬 케이블카 -> 🌉 키스브릿지",
+            "[북섬 투어] 🦁 빈사파리 탐방 -> 🏰 빈원더스 -> 🌙 그랜드월드",
+            "[시내 투어] 🛕 호국사 -> 🏖️ 사오비치 -> 🦞 해산물 중식 및 마사지",
+            "[공항 샌딩] 킹콩마트 쇼핑 -> 공항 이동 (귀국)"
+        ];
+
+        let teamsData = JSON.parse(localStorage.getItem('teamsData')) || [
             {
                 id: 1,
-                code: "BVE904ZE5W",
-                startDate: "2026-09-17",
-                endDate: "2026-09-20",
-                guideText: `투어 코드: BVE904ZE5W\n일정: 2026-09-17 ~ 2026-09-20 (3박 4일)\n가이드: KO: 박재우 / VN: Thiện (-0378461735)\n인원: ADT 5명, CHD 5명 (총 10명)\n호텔 정보:\n - NOVOTEL (김용석 Superior Twin * 3) - 예약번호: 1090791\n - BEST WESTERN (정진선 DELUXE TWN * 1) - 예약번호: 643000\n정산 조건: 메꾸기 1인 $80(5+5chd) / 회사 5:5 정산 조건 / 옵션가능 / 쇼핑 3회\n기가팁 금액: $50 × 10명 = $500`,
-                customers: [
-                    { enName: "KIM/YONGSEOK.MR", koName: "김용석", birth: "1976-01-01", phone: "1090791", req: "NOVOTEL Superior Twin (3방 파이널 OK)" },
-                    { enName: "JUNG/JINSEON.MS", koName: "정진선", birth: "1980-01-01", phone: "643000", req: "BEST WESTERN DELUXE TWN (1방)" }
+                flights: [
+                    { type: "인천➔푸꾸옥", name: "VJ969", time: "11:10", pax: "3명" },
+                    { type: "인천➔푸꾸옥", name: "VJ970", time: "15:20", pax: "2명" },
+                    { type: "푸꾸옥➔인천", name: "VJ968", time: "23:10", pax: "5명" }
                 ],
-                pax: "10명",
-                income: 500
+                startDate: "2026-09-22",
+                endDate: "2026-09-25",
+                koreaGuide: "박재우",
+                vietnamGuide: "Thiện (-0378461735)",
+                hotels: [{ name: "NOVOTEL", roomType: "Superior Twin * 3", count: "3" }],
+                includedItems: [],
+                sendingItems: [],
+                settlementCond: "메꾸기 1인 $80 / 회사 5:5",
+                gigaTip: "$50 × 5명 = $250",
+                customers: [{ enName: "GUEST/NAME", koName: "고객명", birth: "1990-01-01", phone: "000000", req: "없음" }]
             }
         ];
 
-        let activeTeamId = 1;
-        let selectedDateKeyForModal = "";
+        let activeTeamId = teamsData[0].id;
+        let isCreatingNew = false;
+        let targetPresetDateKey = null;
+        let dailySchedules = JSON.parse(localStorage.getItem('dailySchedules')) || {};
 
-        let dailySchedules = {
-            "2026-09-17": "[1일차] ✈️ 공항 미팅 -> 가이드/현지가이드(Thiện) 미팅 -> 🏨 호텔 체크인 및 휴식 (노보텔 & 베스트웨스턴)",
-            "2026-09-18": "[2일차] 🏝️ 호핑투어 -> 혼똠섬 케이블카 & 워터파크 -> 🌉 키스브릿지(일몰 감상) -> 석식 및 옵션 투어 진행",
-            "2026-09-19": "[3일차] 🍜 중식(분짜+짜조) -> 🦁 빈사파리(VinWonders/Safari) 탐방 -> 🥩 석식(삼겹살) -> 옵션 및 휴식",
-            "2026-09-20": "[4일차] 🍲 중식(반쎄오) -> 🛍️ 쇼핑 3회 진행 -> 공항 이동 (ZE982 탑승 및 귀국)"
-        };
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-            
-            if(tabId === 'tab-settlement') {
-                calculate();
-            } else if(tabId === 'tab-schedule') {
-                renderScheduleCalendar();
-                renderDetailTimeline();
-                calculateAges();
-            }
+        function saveAllToLocalStorage() {
+            localStorage.setItem('teamsData', JSON.stringify(teamsData));
+            localStorage.setItem('dailySchedules', JSON.stringify(dailySchedules));
+            localStorage.setItem('tourPresetsOptions', JSON.stringify(tourPresets));
+            localStorage.setItem('settlementOptions', JSON.stringify(dropdownOptions.settlement));
+            localStorage.setItem('koreaGuideOptions', JSON.stringify(dropdownOptions.koreaGuide));
         }
 
-        function getZodiac(year) {
-            const animals = [
-                { name: "원숭이띠", icon: "🐵" }, { name: "닭띠", icon: "🐔" },
-                { name: "개띠", icon: "🐶" }, { name: "돼지띠", icon: "🐷" },
-                { name: "쥐띠", icon: "🐭" }, { name: "소띠", icon: "🐮" },
-                { name: "호랑이띠", icon: "🐯" }, { name: "토끼띠", icon: "🐰" },
-                { name: "용띠", icon: "🐲" }, { name: "뱀띠", icon: "🐍" },
-                { name: "말띠", icon: "🐴" }, { name: "양띠", icon: "🐑" }
-            ];
-            return animals[year % 12];
+        function calculateAgeNum(birthStr) {
+            if(!birthStr) return "-세";
+            const yearStr = birthStr.replace(/[^0-9]/g, '').substring(0, 4);
+            if (yearStr.length === 4) {
+                const age = new Date().getFullYear() - parseInt(yearStr, 10) + 1;
+                return `${age}세`;
+            }
+            return "-세";
+        }
+
+        function updateTeamDropdown() {
+            const select = document.getElementById('teamSelectDropdown');
+            if(!select) return;
+            select.innerHTML = '';
+            teamsData.forEach(t => {
+                let opt = document.createElement('option');
+                opt.value = t.id;
+                opt.innerText = `기간: ${t.startDate} ~ ${t.endDate} (총 인원: ${t.customers.length}명)`;
+                if(t.id === activeTeamId) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function onTeamSelectChange(selectObj) {
+            loadTeamData(parseInt(selectObj.value, 10));
         }
 
         function loadTeamData(teamId) {
@@ -590,288 +547,329 @@
             let team = teamsData.find(t => t.id === teamId);
             if(!team) return;
 
-            document.getElementById('currentTeamTitle').innerText = `${team.code} (${team.startDate}~${team.endDate})`;
-            document.getElementById('teamCodeInput').value = team.code;
-            document.getElementById('teamStartDate').value = team.startDate;
-            document.getElementById('teamEndDate').value = team.endDate;
-            document.getElementById('guideOrderText').value = team.guideText;
-            document.getElementById('tourPax').value = team.pax;
-            document.getElementById('teamGuideIncome').value = team.income;
+            updateTeamDropdown();
+            
+            let flightHtml = (team.flights || []).map(f => `✈️ [${f.type}] <strong>${f.name}</strong> (${f.time}) <span style="background:#e8f0fe; color:#1a73e8; padding:1px 5px; border-radius:3px; font-weight:bold; font-size:11px;">미팅인원: ${f.pax || '0명'}</span>`).join('<br>');
+            document.getElementById('viewFlightInfo').innerHTML = flightHtml || "-";
 
-            let tbody = document.getElementById('customerTableBody');
+            document.getElementById('viewDateRange').innerText = `${team.startDate || ""} ~ ${team.endDate || ""}`;
+            document.getElementById('viewGuideInfo').innerText = `🇰🇷 ${team.koreaGuide} / 🇻🇳 ${team.vietnamGuide || "-"}`;
+            document.getElementById('viewPaxInfo').innerText = `성인/소아 총 ${team.customers.length}명`;
+            
+            let hotelHtml = (team.hotels || []).map(h => `🏨 <strong>${h.name}</strong><br>└ 🛏️ ${h.roomType} (${h.count}객실)`).join('<br>');
+            document.getElementById('viewHotelInfo').innerHTML = hotelHtml || "-";
+            document.getElementById('viewSettlementAndTip').innerText = `${team.settlementCond || "-"} | 기가팁: ${team.gigaTip || "-"}`;
+
+            renderChecklistItems('viewIncludedList', team.includedItems || []);
+            renderChecklistItems('viewSendingList', team.sendingItems || []);
+
+            renderViewCustomerTable(team.customers || []);
+            renderDetailTimeline();
+            renderScheduleCalendar();
+        }
+
+        function renderChecklistItems(elementId, items) {
+            const container = document.getElementById(elementId);
+            if(!container) return;
+            container.innerHTML = '';
+            if(items.length === 0) {
+                container.innerHTML = '<span style="font-size:11px; color:#888;">등록된 항목 없음</span>';
+                return;
+            }
+            items.forEach(item => {
+                let div = document.createElement('div');
+                div.className = 'check-item';
+                div.innerHTML = `<input type="checkbox"> <span>${item}</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        function renderViewCustomerTable(customers) {
+            let tbody = document.getElementById('viewCustomerTableBody');
             tbody.innerHTML = '';
-            team.customers.forEach((c, index) => {
+            customers.forEach(c => {
                 let row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>
-                        <input type="text" class="cust-en" value="${c.enName}" placeholder="영문 성함" style="margin-bottom: 3px; font-weight: bold;">
-                        <input type="text" class="cust-ko" value="${c.koName}" placeholder="한글 성함" style="color: #555;">
-                    </td>
-                    <td>
-                        <input type="text" class="cust-birth" value="${c.birth}" placeholder="1976-01-01" oninput="calculateAges()">
-                        <div class="age-display" id="age_${index}">나이: -세</div>
-                    </td>
-                    <td><input type="text" class="cust-phone" value="${c.phone}"></td>
-                    <td><input type="text" class="cust-req" value="${c.req}"></td>
+                    <td><strong>${c.enName}</strong><br><span style="color:#555;">${c.koName}</span></td>
+                    <td>${c.birth} <span class="age-badge">${calculateAgeNum(c.birth)}</span></td>
+                    <td>${c.phone}</td>
+                    <td style="color: #d93025; font-weight: bold;">${c.req || '특이사항 없음'}</td>
                 `;
                 tbody.appendChild(row);
             });
-
-            calculateAges();
-            renderScheduleCalendar();
-            renderDetailTimeline();
-            calculate();
         }
 
-        function saveActiveTeamData() {
+        function openNewTeamModal() {
+            isCreatingNew = true;
+            document.getElementById('directiveModalTitle').innerText = '✨ 새 행사 추가하기';
+            
+            renderModalFlightRows([
+                { type: "인천➔푸꾸옥", name: "VJ969", time: "11:10", pax: "3명" },
+                { type: "푸꾸옥➔인천", name: "VJ968", time: "23:10", pax: "3명" }
+            ]);
+
+            document.getElementById('inputStartDate').value = "2026-09-22";
+            document.getElementById('inputEndDate').value = "2026-09-25";
+            document.getElementById('inputVietnamGuide').value = "Thiện (-0378461735)";
+            document.getElementById('inputIncludedItems').value = "";
+            document.getElementById('inputSendingItems').value = "";
+            document.getElementById('inputGigaTip').value = "$50 × 1명 = $50";
+
+            populateSelectOptions('selectKoreaGuide', dropdownOptions.koreaGuide, "박재우");
+            populateSelectOptions('selectSettlementCond', dropdownOptions.settlement, dropdownOptions.settlement[0]);
+            document.getElementById('newSettlementAddArea').style.display = 'none';
+
+            renderModalHotelRows([{name: "NOVOTEL", roomType: "Superior Twin", count: "3"}]);
+            renderModalCustomerTable([{enName: "GUEST/NAME", koName: "고객명", birth: "1990-01-01", phone: "000000", req: "없음"}]);
+
+            document.getElementById('directiveModal').style.display = 'flex';
+        }
+
+        function openEditDirectiveModal() {
+            isCreatingNew = false;
+            document.getElementById('directiveModalTitle').innerText = '📝 행사 상세 정보 편집';
             let team = teamsData.find(t => t.id === activeTeamId);
             if(!team) return;
 
-            team.code = document.getElementById('teamCodeInput').value;
-            team.startDate = document.getElementById('teamStartDate').value;
-            team.endDate = document.getElementById('teamEndDate').value;
-            team.guideText = document.getElementById('guideOrderText').value;
-            team.pax = document.getElementById('tourPax').value;
-            team.income = parseFloat(document.getElementById('teamGuideIncome').value) || 0;
+            renderModalFlightRows(team.flights || []);
 
-            let customers = [];
-            const rows = document.querySelectorAll('#customerTableBody tr');
-            rows.forEach(row => {
-                let enInput = row.querySelector('.cust-en');
-                let koInput = row.querySelector('.cust-ko');
-                let birthInput = row.querySelector('.cust-birth');
-                let phoneInput = row.querySelector('.cust-phone');
-                let reqInput = row.querySelector('.cust-req');
-                
-                if(enInput && birthInput) {
-                    customers.push({
-                        enName: enInput.value,
-                        koName: koInput ? koInput.value : '',
-                        birth: birthInput.value,
-                        phone: phoneInput ? phoneInput.value : '',
-                        req: reqInput ? reqInput.value : ''
-                    });
-                }
-            });
-            team.customers = customers;
-            
-            document.getElementById('currentTeamTitle').innerText = `${team.code} (${team.startDate}~${team.endDate})`;
-            renderScheduleCalendar();
-            renderDetailTimeline();
-            alert("수정하신 내용이 안전하게 저장되었으며 캘린더 및 상세 일정에 반영되었습니다!");
+            document.getElementById('inputStartDate').value = team.startDate || "";
+            document.getElementById('inputEndDate').value = team.endDate || "";
+            document.getElementById('inputVietnamGuide').value = team.vietnamGuide || "";
+            document.getElementById('inputIncludedItems').value = (team.includedItems || []).join(', ');
+            document.getElementById('inputSendingItems').value = (team.sendingItems || []).join(', ');
+            document.getElementById('inputGigaTip').value = team.gigaTip || "$50";
+
+            populateSelectOptions('selectKoreaGuide', dropdownOptions.koreaGuide, team.koreaGuide);
+            populateSelectOptions('selectSettlementCond', dropdownOptions.settlement, team.settlementCond);
+            document.getElementById('newSettlementAddArea').style.display = 'none';
+
+            renderModalHotelRows(team.hotels);
+            renderModalCustomerTable(team.customers);
+            document.getElementById('directiveModal').style.display = 'flex';
         }
 
-        function addNewTeam() {
-            let newId = teamsData.length > 0 ? Math.max(...teamsData.map(t => t.id)) + 1 : 1;
-            let newTeam = {
-                id: newId,
-                code: "TEAM" + newId,
-                startDate: "2026-09-22",
-                endDate: "2026-09-25",
-                guideText: "새로운 행사지시서 내용을 입력하세요.",
-                customers: [{ enName: "GUEST NAME", koName: "신규 고객", birth: "1990-01-01", phone: "00000000", req: "요청사항 입력" }],
-                pax: "2명",
-                income: 300
-            };
-            teamsData.push(newTeam);
-            loadTeamData(newId);
-            alert("새로운 행사가 등록되었습니다!");
+        function closeDirectiveModal() {
+            document.getElementById('directiveModal').style.display = 'none';
         }
 
-        function calculateAges() {
-            const rows = document.querySelectorAll('#customerTableBody tr');
-            rows.forEach((row) => {
-                const textInput = row.querySelector('.cust-birth');
-                const displayDiv = row.querySelector('.age-display');
-                if (textInput && displayDiv) {
-                    const val = textInput.value.trim();
-                    const cleanVal = val.replace(/[^0-9]/g, '');
-                    const yearStr = cleanVal.substring(0, 4);
-                    
-                    if (yearStr.length === 4 && !isNaN(yearStr)) {
-                        const birthYear = parseInt(yearStr, 10);
-                        const currentYear = new Date().getFullYear();
-                        const age = currentYear - birthYear + 1;
-                        const zodiac = getZodiac(birthYear);
-                        displayDiv.innerText = `나이: ${age}세 (${zodiac.icon} ${zodiac.name})`;
-                    } else {
-                        displayDiv.innerText = `나이: -세`;
-                    }
-                }
+        function populateSelectOptions(elemId, optionsArray, selectedVal) {
+            const sel = document.getElementById(elemId);
+            sel.innerHTML = '';
+            optionsArray.forEach(opt => {
+                let o = document.createElement('option');
+                o.value = opt;
+                o.innerText = opt;
+                if(opt === selectedVal) o.selected = true;
+                sel.appendChild(o);
             });
         }
 
-        function addNewCustomerRow() {
-            const tbody = document.getElementById('customerTableBody');
-            const rowCount = tbody.querySelectorAll('tr').length;
-            const row = document.createElement('tr');
+        function addSettlementOption() {
+            let area = document.getElementById('newSettlementAddArea');
+            area.style.display = area.style.display === 'flex' ? 'none' : 'flex';
+            document.getElementById('inputNewSettlementText').value = '';
+        }
+
+        function saveNewSettlementOption() {
+            let val = document.getElementById('inputNewSettlementText').value.trim();
+            if(!val) { alert("정산 조건을 입력해주세요."); return; }
+            if(!dropdownOptions.settlement.includes(val)) {
+                dropdownOptions.settlement.push(val);
+                saveAllToLocalStorage();
+            }
+            populateSelectOptions('selectSettlementCond', dropdownOptions.settlement, val);
+            document.getElementById('newSettlementAddArea').style.display = 'none';
+        }
+
+        function deleteSelectedSettlement() {
+            const sel = document.getElementById('selectSettlementCond');
+            let val = sel.value;
+            if(dropdownOptions.settlement.length <= 1) {
+                alert("최소 1개의 정산 조건은 유지되어야 합니다.");
+                return;
+            }
+            if(confirm(`"${val}" 정산 조건을 목록에서 삭제하시겠습니까?`)) {
+                dropdownOptions.settlement = dropdownOptions.settlement.filter(item => item !== val);
+                saveAllToLocalStorage();
+                populateSelectOptions('selectSettlementCond', dropdownOptions.settlement, dropdownOptions.settlement[0]);
+            }
+        }
+
+        function renderModalFlightRows(flights) {
+            const container = document.getElementById('modalFlightListContainer');
+            container.innerHTML = '';
+            (flights || []).forEach(f => {
+                let div = document.createElement('div');
+                div.style.cssText = "display: flex; gap: 4px; align-items: center;";
+                div.innerHTML = `
+                    <select class="m-flight-type" style="flex:1.1;">
+                        <option value="인천➔푸꾸옥" ${f.type === '인천➔푸꾸옥' ? 'selected':''}>인천➔푸꾸옥</option>
+                        <option value="푸꾸옥➔인천" ${f.type === '푸꾸옥➔인천' ? 'selected':''}>푸꾸옥➔인천</option>
+                        <option value="기타구간" ${f.type === '기타구간' ? 'selected':''}>기타구간</option>
+                    </select>
+                    <input type="text" class="m-flight-name" value="${f.name}" style="flex:1;" placeholder="편명 (VJ969)">
+                    <input type="text" class="m-flight-time" value="${f.time}" style="flex:0.8;" placeholder="시간 (11:10)">
+                    <input type="text" class="m-flight-pax" value="${f.pax || ''}" style="flex:0.8;" placeholder="미팅인원 (3명)">
+                    <button type="button" class="btn-del" onclick="this.closest('div').remove()">삭제</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addFlightRow() {
+            let container = document.getElementById('modalFlightListContainer');
+            let div = document.createElement('div');
+            div.style.cssText = "display: flex; gap: 4px; align-items: center;";
+            div.innerHTML = `
+                <select class="m-flight-type" style="flex:1.1;">
+                    <option value="인천➔푸꾸옥">인천➔푸꾸옥</option>
+                    <option value="푸꾸옥➔인천" selected>푸꾸옥➔인천</option>
+                    <option value="기타구간">기타구간</option>
+                </select>
+                <input type="text" class="m-flight-name" value="VJ000" style="flex:1;" placeholder="편명">
+                <input type="text" class="m-flight-time" value="00:00" style="flex:0.8;" placeholder="시간">
+                <input type="text" class="m-flight-pax" value="2명" style="flex:0.8;" placeholder="미팅인원">
+                <button type="button" class="btn-del" onclick="this.closest('div').remove()">삭제</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function renderModalHotelRows(hotels) {
+            const container = document.getElementById('modalHotelListContainer');
+            container.innerHTML = '';
+            (hotels || []).forEach(h => {
+                let div = document.createElement('div');
+                div.style.cssText = "display: flex; gap: 4px; align-items: center;";
+                div.innerHTML = `
+                    <input type="text" class="m-hotel-name" value="${h.name}" style="flex:1.2;" placeholder="호텔명">
+                    <input type="text" class="m-hotel-room" value="${h.roomType}" style="flex:1.2;" placeholder="룸타입">
+                    <input type="text" class="m-hotel-count" value="${h.count}" style="width:40px; text-align:center;" placeholder="객실">
+                    <button type="button" class="btn-del" onclick="this.closest('div').remove()">삭제</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addHotelRow() {
+            let container = document.getElementById('modalHotelListContainer');
+            let div = document.createElement('div');
+            div.style.cssText = "display: flex; gap: 4px; align-items: center;";
+            div.innerHTML = `
+                <input type="text" class="m-hotel-name" value="노보텔" style="flex:1.2;" placeholder="호텔명">
+                <input type="text" class="m-hotel-room" value="Twin" style="flex:1.2;" placeholder="룸타입">
+                <input type="text" class="m-hotel-count" value="1" style="width:40px; text-align:center;" placeholder="객실">
+                <button type="button" class="btn-del" onclick="this.closest('div').remove()">삭제</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function renderModalCustomerTable(customers) {
+            let tbody = document.getElementById('modalCustomerTableBody');
+            tbody.innerHTML = '';
+            customers.forEach(c => {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding:4px;"><input type="text" class="m-en" value="${c.enName}" style="font-size:11px; margin-bottom:2px;"><input type="text" class="m-ko" value="${c.koName}" style="font-size:11px;"></td>
+                    <td style="padding:4px;"><input type="text" class="m-birth" value="${c.birth}" style="font-size:11px;"></td>
+                    <td style="padding:4px;"><input type="text" class="m-phone" value="${c.phone}" style="font-size:11px;"></td>
+                    <td style="padding:4px; display:flex; gap:2px;"><input type="text" class="m-req" value="${c.req}" style="font-size:11px; flex:1;" placeholder="알레르기 등"><button class="btn-del" onclick="this.closest('tr').remove()">삭제</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function addModalCustomerRow() {
+            let tbody = document.getElementById('modalCustomerTableBody');
+            let row = document.createElement('tr');
             row.innerHTML = `
-                <td>
-                    <input type="text" class="cust-en" value="" placeholder="영문 성함" style="margin-bottom: 3px; font-weight: bold;">
-                    <input type="text" class="cust-ko" value="" placeholder="한글 성함" style="color: #555;">
-                </td>
-                <td>
-                    <input type="text" class="cust-birth" value="" placeholder="1990-01-01" oninput="calculateAges()">
-                    <div class="age-display" id="age_${rowCount}">나이: -세</div>
-                </td>
-                <td><input type="text" class="cust-phone" value="" placeholder="예약번호"></td>
-                <td><input type="text" class="cust-req" value="" placeholder="요청사항" style="width: 70%; display:inline;"><button class="btn-del" style="float:right; width:26%;" onclick="removeCustomerRow(this)">삭제</button></td>
+                <td style="padding:4px;"><input type="text" class="m-en" value="GUEST/NAME" style="font-size:11px; margin-bottom:2px;"><input type="text" class="m-ko" value="" style="font-size:11px;"></td>
+                <td style="padding:4px;"><input type="text" class="m-birth" value="1990-01-01" style="font-size:11px;"></td>
+                <td style="padding:4px;"><input type="text" class="m-phone" value="0000" style="font-size:11px;"></td>
+                <td style="padding:4px; display:flex; gap:2px;"><input type="text" class="m-req" value="" style="font-size:11px; flex:1;" placeholder="알레르기 등"><button class="btn-del" onclick="this.closest('tr').remove()">삭제</button></td>
             `;
             tbody.appendChild(row);
-            calculateAges();
         }
 
-        function removeCustomerRow(btn) {
-            btn.closest('tr').remove();
-            calculateAges();
-        }
-
-        // ⭐ 행사지시서 사진 OCR 자동 인식 기능
-        function processGuideOrderOCR(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const preview = document.getElementById('guideOrderImagePreview');
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-
-            const loadingEl = document.getElementById('orderOcrLoading');
-            loadingEl.style.display = 'block';
-
-            Tesseract.recognize(
-                file,
-                'kor+eng',
-                { logger: m => console.log(m) }
-            ).then(({ data: { text } }) => {
-                loadingEl.style.display = 'none';
-                if (text && text.trim() !== "") {
-                    document.getElementById('guideOrderText').value = "--- [AI OCR 인식 결과] ---\n" + text.trim();
-                    alert("✨ 행사지시서 글자 인식이 완료되어 텍스트 상자에 반영되었습니다!");
-                } else {
-                    alert("⚠️ 사진에서 인식된 텍스트가 없습니다. 다시 선명하게 촬영해 주세요.");
-                }
-            }).catch(err => {
-                loadingEl.style.display = 'none';
-                console.error(err);
-                alert("❌ 글자 인식 중 오류가 발생했습니다.");
-            });
-        }
-
-        // ⭐ 고객 명단 사진 OCR 자동 인식 기능
-        function processCustomerOCR(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const preview = document.getElementById('customerImagePreview');
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-
-            const loadingEl = document.getElementById('customerOcrLoading');
-            loadingEl.style.display = 'block';
-
-            Tesseract.recognize(
-                file,
-                'kor+eng',
-                { logger: m => console.log(m) }
-            ).then(({ data: { text } }) => {
-                loadingEl.style.display = 'none';
-                if (text && text.trim() !== "") {
-                    alert("✨ 고객 서류 인식 완료!\n인식된 내용 일부를 첫 번째 고객 요청사항에 반영합니다.");
-                    const firstReq = document.querySelector('.cust-req');
-                    if(firstReq) {
-                        firstReq.value = "OCR 추출: " + text.substring(0, 40) + "...";
-                    }
-                } else {
-                    alert("⚠️ 명단 사진에서 텍스트를 찾지 못했습니다.");
-                }
-            }).catch(err => {
-                loadingEl.style.display = 'none';
-                console.error(err);
-                alert("❌ 명단 분석 중 오류가 발생했습니다.");
-            });
-        }
-
-        function previewImage(event, previewId) {
-            const reader = new FileReader();
-            reader.onload = function(){
-                const output = document.getElementById(previewId);
-                if(output) {
-                    output.src = reader.result;
-                    output.style.display = 'block';
-                }
-            };
-            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
-        }
-
-        function renderScheduleCalendar() {
-            const grid = document.getElementById('scheduleCalendarGrid');
-            if(!grid) return;
-            grid.innerHTML = '';
-
-            const daysName = ['일', '월', '화', '수', '목', '금', '토'];
-            daysName.forEach(day => {
-                let div = document.createElement('div');
-                div.className = 'calendar-day-name';
-                div.innerText = day;
-                grid.appendChild(div);
+        function saveActiveTeamData() {
+            let flights = [];
+            document.querySelectorAll('#modalFlightListContainer > div').forEach(div => {
+                flights.push({
+                    type: div.querySelector('.m-flight-type').value,
+                    name: div.querySelector('.m-flight-name').value,
+                    time: div.querySelector('.m-flight-time').value,
+                    pax: div.querySelector('.m-flight-pax').value
+                });
             });
 
-            let firstDayIndex = 2; // 2026년 9월 1일 화요일
-            let totalDays = 30;
+            let hotels = [];
+            document.querySelectorAll('#modalHotelListContainer > div').forEach(div => {
+                hotels.push({
+                    name: div.querySelector('.m-hotel-name').value,
+                    roomType: div.querySelector('.m-hotel-room').value,
+                    count: div.querySelector('.m-hotel-count').value
+                });
+            });
 
-            for (let i = 0; i < firstDayIndex; i++) {
-                let emptyCell = document.createElement('div');
-                emptyCell.className = 'calendar-cell';
-                grid.appendChild(emptyCell);
+            let customers = [];
+            document.querySelectorAll('#modalCustomerTableBody tr').forEach(row => {
+                customers.push({
+                    enName: row.querySelector('.m-en').value,
+                    koName: row.querySelector('.m-ko').value,
+                    birth: row.querySelector('.m-birth').value,
+                    phone: row.querySelector('.m-phone').value,
+                    req: row.querySelector('.m-req').value
+                });
+            });
+
+            if (isCreatingNew) {
+                let newId = teamsData.length > 0 ? Math.max(...teamsData.map(t => t.id)) + 1 : 1;
+                let newTeam = {
+                    id: newId,
+                    flights: flights,
+                    startDate: document.getElementById('inputStartDate').value,
+                    endDate: document.getElementById('inputEndDate').value,
+                    koreaGuide: document.getElementById('selectKoreaGuide').value,
+                    vietnamGuide: document.getElementById('inputVietnamGuide').value,
+                    settlementCond: document.getElementById('selectSettlementCond').value,
+                    gigaTip: document.getElementById('inputGigaTip').value,
+                    includedItems: document.getElementById('inputIncludedItems').value.split(',').map(s => s.trim()).filter(Boolean),
+                    sendingItems: document.getElementById('inputSendingItems').value.split(',').map(s => s.trim()).filter(Boolean),
+                    hotels: hotels,
+                    customers: customers
+                };
+                teamsData.push(newTeam);
+                activeTeamId = newId;
+            } else {
+                let team = teamsData.find(t => t.id === activeTeamId);
+                if(!team) return;
+
+                team.flights = flights;
+                team.startDate = document.getElementById('inputStartDate').value;
+                team.endDate = document.getElementById('inputEndDate').value;
+                team.koreaGuide = document.getElementById('selectKoreaGuide').value;
+                team.vietnamGuide = document.getElementById('inputVietnamGuide').value;
+                team.settlementCond = document.getElementById('selectSettlementCond').value;
+                team.gigaTip = document.getElementById('inputGigaTip').value;
+                team.includedItems = document.getElementById('inputIncludedItems').value.split(',').map(s => s.trim()).filter(Boolean);
+                team.sendingItems = document.getElementById('inputSendingItems').value.split(',').map(s => s.trim()).filter(Boolean);
+                team.hotels = hotels;
+                team.customers = customers;
             }
 
-            for (let d = 1; d <= totalDays; d++) {
-                let cell = document.createElement('div');
-                cell.className = 'calendar-cell';
-                
-                let monthStr = "9".padStart(2, '0');
-                let dayStr = String(d).padStart(2, '0');
-                let dateKey = `2026-${monthStr}-${dayStr}`;
+            saveAllToLocalStorage();
+            closeDirectiveModal();
+            loadTeamData(activeTeamId);
+            alert("저장되었습니다!");
+        }
 
-                cell.onclick = (function(k) {
-                    return function() { openScheduleModal(k); };
-                })(dateKey);
-
-                let numDiv = document.createElement('div');
-                numDiv.className = 'day-number';
-                numDiv.innerText = d;
-                cell.appendChild(numDiv);
-
-                teamsData.forEach(team => {
-                    let currDate = new Date(dateKey);
-                    let sDate = new Date(team.startDate);
-                    let eDate = new Date(team.endDate);
-
-                    if (currDate >= sDate && currDate <= eDate) {
-                        let badge = document.createElement('div');
-                        badge.className = 'calendar-event-badge';
-                        if(team.id === activeTeamId) badge.style.background = '#34a853';
-                        badge.innerText = `🌴 ${team.code}`;
-                        cell.appendChild(badge);
-                    }
-                });
-
-                if (dailySchedules[dateKey]) {
-                    let item = document.createElement('div');
-                    item.className = 'calendar-schedule-item';
-                    item.innerText = dailySchedules[dateKey];
-                    cell.appendChild(item);
-                }
-
-                grid.appendChild(cell);
+        function deleteActiveTeam() {
+            if(teamsData.length <= 1) { alert("최소 1개의 행사는 유지되어야 합니다."); return; }
+            if(confirm("정말 이 행사를 삭제하시겠습니까?")) {
+                teamsData = teamsData.filter(t => t.id !== activeTeamId);
+                activeTeamId = teamsData[0].id;
+                saveAllToLocalStorage();
+                loadTeamData(activeTeamId);
             }
         }
 
@@ -879,97 +877,104 @@
             const container = document.getElementById('detailTimelineContainer');
             if(!container) return;
             container.innerHTML = '';
+            let team = teamsData.find(t => t.id === activeTeamId);
+            if(!team || !team.startDate || !team.endDate) return;
 
-            let activeTeam = teamsData.find(t => t.id === activeTeamId);
-            if(!activeTeam) return;
-
-            let sDate = new Date(activeTeam.startDate);
-            let eDate = new Date(activeTeam.endDate);
-            
-            let curr = new Date(sDate);
+            let curr = new Date(team.startDate);
+            let end = new Date(team.endDate);
             let dayCount = 1;
 
-            while(curr <= eDate) {
-                let year = curr.getFullYear();
-                let month = String(curr.getMonth() + 1).padStart(2, '0');
-                let day = String(curr.getDate()).padStart(2, '0');
-                let dateKey = `${year}-${month}-${day}`;
-                
-                let scheduleText = dailySchedules[dateKey] || '등록된 일정이 없습니다.';
+            while(curr <= end) {
+                let dateKey = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+                let val = dailySchedules[dateKey] || '';
 
                 let card = document.createElement('div');
                 card.className = 'timeline-card';
                 card.innerHTML = `
                     <div class="timeline-card-header">
                         <span>🗓️ ${dayCount}일차 (${dateKey})</span>
-                        <button class="btn-add" style="width: auto; padding: 3px 8px; margin: 0; font-size: 11px;" onclick="openScheduleModal('${dateKey}')">편집</button>
+                        <div style="display:flex; gap:4px;">
+                            <button class="btn-main" style="background:#f29900; font-size:10px; padding:3px 6px;" onclick="openPresetModal('${dateKey}')">✨ 코스선택</button>
+                            <button class="btn-main" style="background:#34a853; font-size:10px; padding:3px 6px;" onclick="saveSchedule('${dateKey}', this)">저장</button>
+                        </div>
                     </div>
-                    <div class="timeline-card-content">${scheduleText.replace(/\n/g, '<br>')}</div>
+                    <textarea class="t-${dateKey}" style="width:100%; height:60px; font-size:12px;" placeholder="오전/오후 일정 및 식사 메뉴 입력">${val}</textarea>
                 `;
                 container.appendChild(card);
-
                 curr.setDate(curr.getDate() + 1);
                 dayCount++;
             }
         }
 
-        function openScheduleModal(dateKey) {
-            selectedDateKeyForModal = dateKey;
-            document.getElementById('modalDateTitle').innerText = `${dateKey} 일정 관리`;
-            document.getElementById('modalScheduleInput').value = dailySchedules[dateKey] || '';
-            document.getElementById('scheduleModal').style.display = 'flex';
+        function openPresetModal(dateKey) {
+            targetPresetDateKey = dateKey;
+            const container = document.getElementById('presetListContainer');
+            container.innerHTML = '';
+            tourPresets.forEach(preset => {
+                let btn = document.createElement('button');
+                btn.className = 'preset-btn';
+                btn.innerText = preset;
+                btn.onclick = function() {
+                    let ta = document.querySelector(`.t-${targetPresetDateKey}`);
+                    if(ta) ta.value = preset;
+                    closePresetModal();
+                };
+                container.appendChild(btn);
+            });
+            document.getElementById('schedulePresetModal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('scheduleModal').style.display = 'none';
-        }
+        function closePresetModal() { document.getElementById('schedulePresetModal').style.display = 'none'; }
 
-        function saveDailySchedule() {
-            const val = document.getElementById('modalScheduleInput').value.trim();
-            if(val === "") delete dailySchedules[selectedDateKeyForModal];
-            else dailySchedules[selectedDateKeyForModal] = val;
-            closeModal();
+        function saveSchedule(dateKey, btn) {
+            let val = btn.closest('.timeline-card').querySelector('textarea').value.trim();
+            if(val) dailySchedules[dateKey] = val; else delete dailySchedules[dateKey];
+            saveAllToLocalStorage();
             renderScheduleCalendar();
-            renderDetailTimeline();
+            alert("일정이 저장되었습니다!");
         }
 
-        function addNewEmptyRow() {
-            const tbody = document.getElementById('extraTableBody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><input type="date" value="2026-09-17" onchange="calculate()"></td>
-                <td><input type="text" value="" placeholder="내용 입력" oninput="calculate()"></td>
-                <td><input type="number" value="" placeholder="0" oninput="calculate()"></td>
-                <td style="text-align: center;"><button class="btn-del" onclick="removeRow(this)">삭제</button></td>
-            `;
-            tbody.appendChild(row);
-            calculate();
-        }
+        function renderScheduleCalendar() {
+            const grid = document.getElementById('scheduleCalendarGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            let team = teamsData.find(t => t.id === activeTeamId);
+            let y = 2026, m = 9;
+            if(team && team.startDate) {
+                let p = team.startDate.split('-');
+                y = parseInt(p[0], 10); m = parseInt(p[1], 10);
+                document.getElementById('calendarHeaderTitle').innerText = `${y}년 ${m}월 행사 일정표`;
+            }
 
-        function removeRow(btn) {
-            btn.closest('tr').remove();
-            calculate();
-        }
-
-        function calculate() {
-            let teamIncome = parseFloat(document.getElementById('teamGuideIncome').value) || 0;
-            let extraTotal = 0;
-            
-            const rows = document.querySelectorAll('#extraTableBody tr');
-            rows.forEach(row => {
-                const amountInput = row.querySelectorAll('input')[2];
-                if(amountInput) extraTotal += parseFloat(amountInput.value) || 0;
+            ['일','월','화','수','목','금','토'].forEach(d => {
+                let div = document.createElement('div');
+                div.className = 'calendar-day-name';
+                div.innerText = d;
+                grid.appendChild(div);
             });
 
-            let totalFinalIncome = teamIncome + extraTotal;
-            document.getElementById('resTeamIncome').innerText = teamIncome.toFixed(2);
-            document.getElementById('resExtraIncome').innerText = extraTotal.toFixed(2);
-            document.getElementById('resTotalFinalIncome').innerText = totalFinalIncome.toFixed(2);
+            let firstIdx = new Date(y, m - 1, 1).getDay();
+            let totalD = new Date(y, m, 0).getDate();
+            for(let i=0; i<firstIdx; i++) grid.appendChild(document.createElement('div')).className = 'calendar-cell';
+
+            for(let d=1; d<=totalD; d++) {
+                let cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                let dateKey = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                cell.innerHTML = `<div class="day-number">${d}</div>`;
+                
+               
+                if(dailySchedules[dateKey]) {
+                    let item = document.createElement('div');
+                    item.className = 'calendar-schedule-item';
+                    item.innerText = dailySchedules[dateKey];
+                    cell.appendChild(item);
+                }
+                grid.appendChild(cell);
+            }
         }
 
-        window.onload = function() {
-            loadTeamData(1);
-        };
+        window.onload = function() { loadTeamData(activeTeamId); };
     </script>
 </body>
 </html>
