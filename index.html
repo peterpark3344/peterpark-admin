@@ -283,10 +283,6 @@
             <td id="viewDateRange" style="font-weight: bold; color: #1a73e8;">-</td>
         </tr>
         <tr>
-            <th>✈️ 항공편 및 미팅 정보</th>
-            <td id="viewFlightInfo" style="line-height: 1.4;">-</td>
-        </tr>
-        <tr>
             <th>가이드 정보 (한/베)</th>
             <td id="viewGuideInfo">-</td>
         </tr>
@@ -360,13 +356,6 @@
                     <input type="date" id="inputEndDate">
                 </div>
             </div>
-
-            <!-- ✈️ 항공편 및 미팅 인원 입력 섹션 추가 -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 4px;">
-                <button type="button" class="btn-main" style="padding: 3px 8px; font-size: 11px; background-color: #34a853;" onclick="addFlightRow()">＋ 항공편행 추가</button>
-                <span style="font-size: 11px; font-weight: bold; color: #1a73e8;">✈️ 항공편 및 미팅 인원 입력</span>
-            </div>
-            <div id="modalFlightListContainer" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;"></div>
 
             <div style="display: flex; gap: 5px; margin-bottom: 4px;">
                 <div style="flex:1;">
@@ -507,7 +496,6 @@
                 tourCode: "TEAM11",
                 startDate: "2026-09-22",
                 endDate: "2026-09-25",
-                flights: [{ flightNo: "VJ974", time: "08:00 도착", paxCount: "6" }],
                 koreaGuide: "박재우",
                 vietnamGuide: "Thiện (-0378461735)",
                 paxInfo: "성인 4명, 소아 2명 (총 6명)",
@@ -603,14 +591,9 @@
             updateTeamDropdown();
             if(!team.koreaGuide) team.koreaGuide = "박재우";
             if(!team.hotels) team.hotels = [];
-            if(!team.flights) team.flights = [];
 
             document.getElementById('viewTourCode').innerText = team.tourCode || "-";
             document.getElementById('viewDateRange').innerText = `${team.startDate || ""} ~ ${team.endDate || ""}`;
-            
-            let flightDisplayHtml = team.flights.map(f => `✈️ <strong>${f.flightNo}</strong> (${f.time}) - 미팅인원: <strong>${f.paxCount}명</strong>`).join('<br>');
-            document.getElementById('viewFlightInfo').innerHTML = flightDisplayHtml || "-";
-
             document.getElementById('viewGuideInfo').innerText = `🇰🇷 한국: ${team.koreaGuide} / 🇻🇳 베트남: ${team.vietnamGuide || "없음"}`;
             document.getElementById('viewPaxInfo').innerText = team.paxInfo || "-";
             
@@ -730,60 +713,6 @@
             return { adult, child };
         }
 
-        function renderModalFlightRows(flightsArray) {
-            const container = document.getElementById('modalFlightListContainer');
-            container.innerHTML = '';
-            if(!flightsArray || flightsArray.length === 0) {
-                flightsArray = [{ flightNo: 'VJ974', time: '08:00 도착', paxCount: '6' }];
-            }
-            flightsArray.forEach((f) => {
-                appendFlightRowElement(f.flightNo || '', f.time || '', f.paxCount || '6');
-            });
-        }
-
-        function appendFlightRowElement(flightNo = '', time = '', paxCount = '6') {
-            const container = document.getElementById('modalFlightListContainer');
-            let row = document.createElement('div');
-            row.style.cssText = "display: flex; gap: 4px; align-items: center; background: #f8f9fa; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 4px;";
-            
-            let noInput = document.createElement('input');
-            noInput.type = 'text';
-            noInput.className = 'modal-flight-no';
-            noInput.value = flightNo;
-            noInput.placeholder = '편명 (예: VJ974)';
-            noInput.style.flex = '1.2';
-
-            let timeInput = document.createElement('input');
-            timeInput.type = 'text';
-            timeInput.value = time;
-            timeInput.className = 'modal-flight-time';
-            timeInput.placeholder = '시간 (예: 08:00 도착)';
-            timeInput.style.flex = '1.5';
-
-            let countInput = document.createElement('input');
-            countInput.type = 'text';
-            countInput.className = 'modal-flight-pax';
-            countInput.value = paxCount;
-            countInput.placeholder = '인원';
-            countInput.style.cssText = 'width: 50px; text-align: center;';
-
-            let delBtn = document.createElement('button');
-            delBtn.type = 'button';
-            delBtn.className = 'btn-del';
-            delBtn.innerText = '삭제';
-            delBtn.onclick = function() { row.remove(); };
-
-            row.appendChild(noInput);
-            row.appendChild(timeInput);
-            row.appendChild(countInput);
-            row.appendChild(delBtn);
-            container.appendChild(row);
-        }
-
-        function addFlightRow() {
-            appendFlightRowElement('', '', '');
-        }
-
         function renderModalHotelRows(hotelsArray) {
             const container = document.getElementById('modalHotelListContainer');
             container.innerHTML = '';
@@ -885,7 +814,6 @@
             initModalAdultChildDropdowns(parsed.adult, parsed.child);
             updateGigaTipPreview();
             populateDropdowns(team.koreaGuide || "박재우", team.vietnamGuide || "", team.settlementCond);
-            renderModalFlightRows(team.flights || []);
             renderModalHotelRows(team.hotels);
             renderModalCustomerTable(team.customers || []);
             document.getElementById('directiveModal').style.display = 'flex';
@@ -945,15 +873,6 @@
             let rawTip = document.getElementById('inputGigaTip').value.replace(/[^0-9]/g, '');
             let tipNum = rawTip !== "" ? parseInt(rawTip, 10) : 50;
 
-            let flights = [];
-            document.querySelectorAll('#modalFlightListContainer > div').forEach(r => {
-                flights.push({
-                    flightNo: r.querySelector('.modal-flight-no').value,
-                    time: r.querySelector('.modal-flight-time').value,
-                    paxCount: r.querySelector('.modal-flight-pax').value || "0"
-                });
-            });
-
             let hotels = [];
             document.querySelectorAll('#modalHotelListContainer > div').forEach(r => {
                 hotels.push({
@@ -981,7 +900,6 @@
                     tourCode: tourCodeVal || ("TEAM" + newId),
                     startDate: startDateVal || "2026-09-22",
                     endDate: endDateVal || "2026-09-25",
-                    flights: flights,
                     koreaGuide: document.getElementById('selectKoreaGuide').value,
                     vietnamGuide: document.getElementById('selectVietnamGuide').value,
                     paxInfo: `성인 ${adultVal}명, 소아 ${childVal}명 (총 ${totalVal}명)`,
@@ -996,13 +914,12 @@
                 team.tourCode = tourCodeVal;
                 team.startDate = startDateVal;
                 team.endDate = endDateVal;
-                team.flights = flights;
                 team.koreaGuide = document.getElementById('selectKoreaGuide').value;
                 team.vietnamGuide = document.getElementById('selectVietnamGuide').value;
                 team.settlementCond = document.getElementById('selectSettlementCond').value;
                 team.hotels = hotels;
                 team.paxInfo = `성인 ${adultVal}명, 소아 ${childVal}명 (총 ${totalVal}명)`;
-                team.gigaTip: `$${tipNum} × ${totalVal}명 = $${tipNum * totalVal}`;
+                team.gigaTip = `$${tipNum} × ${totalVal}명 = $${tipNum * totalVal}`;
                 team.customers = customers;
             }
 
@@ -1023,7 +940,6 @@
             initModalAdultChildDropdowns(4, 2);
             updateGigaTipPreview();
             populateDropdowns("박재우", dropdownOptions.vietnamGuide[0] || "", dropdownOptions.settlement[0] || "");
-            renderModalFlightRows([{ flightNo: 'VJ974', time: '08:00 도착', paxCount: '6' }]);
             renderModalHotelRows([{ name: dropdownOptions.hotelList[0], roomType: dropdownOptions.roomTypes[0], count: "2" }]);
             renderModalCustomerTable([{ enName: "HONG/GILDONG", koName: "홍길동", birth: "1990-01-01", phone: "000000", req: "없음" }]);
             document.getElementById('directiveModal').style.display = 'flex';
