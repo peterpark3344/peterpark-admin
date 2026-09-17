@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>푸꾸옥 가이드 수익 및 행사 관리</title>
+    <!-- OCR(문자 인식)을 위한 Tesseract.js 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -188,7 +190,6 @@
             border-top: 1px dashed #ceead6;
             padding-top: 6px;
         }
-        /* 나이 및 띠 표시 스타일 */
         .age-display {
             display: block;
             background: #e8f0fe;
@@ -201,8 +202,6 @@
             text-align: center;
             border: 1px dashed #b9d3fc;
         }
-
-        /* 캘린더 스타일 */
         .calendar-container {
             margin-top: 15px;
             background: #121212;
@@ -287,8 +286,6 @@
             font-weight: bold;
             color: #1a73e8;
         }
-
-        /* 상세 일정 카드 스타일 */
         .detail-timeline {
             margin-top: 15px;
             display: flex;
@@ -319,8 +316,6 @@
             color: #444;
             line-height: 1.5;
         }
-
-        /* 일정 편집 모달창 */
         .modal {
             display: none;
             position: fixed;
@@ -348,12 +343,20 @@
             font-size: 16px;
             margin-bottom: 10px;
         }
+        .ocr-loading {
+            font-size: 12px;
+            color: #e67e22;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <h1>🌴 푸꾸옥 가이드 수익 및 행사 관리</h1>
-    <p class="subtitle">통합 가이드 대시보드</p>
+    <p class="subtitle">통합 가이드 대시보드 (AI OCR 포함)</p>
 
     <!-- 탭 메뉴 버튼 -->
     <div class="tab-nav">
@@ -384,13 +387,15 @@
             </tr>
         </table>
 
-        <div class="section-title">1. 행사지시서 사진 촬영 / 업로드</div>
-        <div style="margin-bottom: 8px;">
+        <!-- 1. 행사지시서 사진 업로드 + OCR 기능 -->
+        <div class="section-title">1. 행사지시서 사진 촬영 / 업로드 (AI 자동인식)</div>
+        <div style="margin-bottom: 4px;">
             <label for="guideOrderPhoto" class="camera-btn-label">
                 📸 행사지시서 카메라로 찍기 / 갤러리 선택
             </label>
-            <input type="file" id="guideOrderPhoto" accept="image/*" capture="environment" onchange="previewGuideOrderImage(event)">
+            <input type="file" id="guideOrderPhoto" accept="image/*" capture="environment" onchange="processGuideOrderOCR(event)">
         </div>
+        <div id="orderOcrLoading" class="ocr-loading">🔄 사진 속 글자를 자동으로 분석 중입니다... 잠시만 기다려주세요!</div>
         <div class="preview-container">
             <img id="guideOrderImagePreview" alt="행사지시서 미리보기">
         </div>
@@ -406,13 +411,15 @@
 정산 조건: 메꾸기 1인 $80(5+5chd) / 회사 5:5 정산 조건 / 옵션가능 / 쇼핑 3회
 기가팁 금액: $50 × 10명 = $500</textarea>
 
-        <div class="section-title" style="margin-top: 15px;">📷 고객 명단 서류 촬영 / 업로드</div>
-        <div style="margin-bottom: 8px;">
+        <!-- 2. 고객 명단 서류 업로드 + OCR 기능 -->
+        <div class="section-title" style="margin-top: 15px;">📷 고객 명단 서류 촬영 / 업로드 (AI 자동인식)</div>
+        <div style="margin-bottom: 4px;">
             <label for="customerPhoto" class="camera-btn-label">
                 📸 고객 명단/서류 카메라로 찍기 / 갤러리 선택
             </label>
-            <input type="file" id="customerPhoto" accept="image/*" capture="environment" onchange="previewCustomerImage(event)">
+            <input type="file" id="customerPhoto" accept="image/*" capture="environment" onchange="processCustomerOCR(event)">
         </div>
+        <div id="customerOcrLoading" class="ocr-loading">🔄 고객 명단 사진을 분석하여 데이터를 읽어오는 중입니다...</div>
         <div class="preview-container">
             <img id="customerImagePreview" alt="고객 서류 미리보기">
         </div>
@@ -428,7 +435,7 @@
                 </tr>
             </thead>
             <tbody id="customerTableBody">
-                <!-- 자바스크립트가 동적으로 생성 및 나이/띠 계산을 수행합니다 -->
+                <!-- 자바스크립트가 동적 렌더링 -->
             </tbody>
         </table>
         <button class="btn-add" onclick="addNewCustomerRow()">＋ 고객 추가하기</button>
@@ -445,9 +452,7 @@
 
         <!-- 일자별 상세 정리 섹션 -->
         <div class="section-title" style="margin-top: 20px;">📌 일자별 상세 투어 일정 정리</div>
-        <div class="detail-timeline" id="detailTimelineContainer">
-            <!-- 자바스크립트가 일자별 카드를 동적으로 렌더링합니다 -->
-        </div>
+        <div class="detail-timeline" id="detailTimelineContainer"></div>
     </div>
 
     <!-- [탭 2] 수익 및 정산 관리 -->
@@ -546,7 +551,6 @@
         let activeTeamId = 1;
         let selectedDateKeyForModal = "";
 
-        // 행사지시서 기반의 상세 일정을 완벽히 반영
         let dailySchedules = {
             "2026-09-17": "[1일차] ✈️ 공항 미팅 -> 가이드/현지가이드(Thiện) 미팅 -> 🏨 호텔 체크인 및 휴식 (노보텔 & 베스트웨스턴)",
             "2026-09-18": "[2일차] 🏝️ 호핑투어 -> 혼똠섬 케이블카 & 워터파크 -> 🌉 키스브릿지(일몰 감상) -> 석식 및 옵션 투어 진행",
@@ -571,18 +575,12 @@
 
         function getZodiac(year) {
             const animals = [
-                { name: "원숭이띠", icon: "🐵" },
-                { name: "닭띠", icon: "🐔" },
-                { name: "개띠", icon: "🐶" },
-                { name: "돼지띠", icon: "🐷" },
-                { name: "쥐띠", icon: "🐭" },
-                { name: "소띠", icon: "🐮" },
-                { name: "호랑이띠", icon: "🐯" },
-                { name: "토끼띠", icon: "🐰" },
-                { name: "용띠", icon: "🐲" },
-                { name: "뱀띠", icon: "🐍" },
-                { name: "말띠", icon: "🐴" },
-                { name: "양띠", icon: "🐑" }
+                { name: "원숭이띠", icon: "🐵" }, { name: "닭띠", icon: "🐔" },
+                { name: "개띠", icon: "🐶" }, { name: "돼지띠", icon: "🐷" },
+                { name: "쥐띠", icon: "🐭" }, { name: "소띠", icon: "🐮" },
+                { name: "호랑이띠", icon: "🐯" }, { name: "토끼띠", icon: "🐰" },
+                { name: "용띠", icon: "🐲" }, { name: "뱀띠", icon: "🐍" },
+                { name: "말띠", icon: "🐴" }, { name: "양띠", icon: "🐑" }
             ];
             return animals[year % 12];
         }
@@ -677,12 +675,12 @@
             };
             teamsData.push(newTeam);
             loadTeamData(newId);
-            alert("새로운 행사가 등록되었습니다. 내용을 수정 후 [저장] 버튼을 누르세요!");
+            alert("새로운 행사가 등록되었습니다!");
         }
 
         function calculateAges() {
             const rows = document.querySelectorAll('#customerTableBody tr');
-            rows.forEach((row, index) => {
+            rows.forEach((row) => {
                 const textInput = row.querySelector('.cust-birth');
                 const displayDiv = row.querySelector('.age-display');
                 if (textInput && displayDiv) {
@@ -709,11 +707,11 @@
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>
-                    <input type="text" class="cust-en" value="ENGLISH NAME" placeholder="영문 성함" style="margin-bottom: 3px; font-weight: bold;">
-                    <input type="text" class="cust-ko" value="한글 성함" placeholder="한글 성함" style="color: #555;">
+                    <input type="text" class="cust-en" value="" placeholder="영문 성함" style="margin-bottom: 3px; font-weight: bold;">
+                    <input type="text" class="cust-ko" value="" placeholder="한글 성함" style="color: #555;">
                 </td>
                 <td>
-                    <input type="text" class="cust-birth" value="1990-01-01" placeholder="1990-01-01" oninput="calculateAges()">
+                    <input type="text" class="cust-birth" value="" placeholder="1990-01-01" oninput="calculateAges()">
                     <div class="age-display" id="age_${rowCount}">나이: -세</div>
                 </td>
                 <td><input type="text" class="cust-phone" value="" placeholder="예약번호"></td>
@@ -726,6 +724,91 @@
         function removeCustomerRow(btn) {
             btn.closest('tr').remove();
             calculateAges();
+        }
+
+        // ⭐ 행사지시서 사진 OCR 자동 인식 기능
+        function processGuideOrderOCR(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const preview = document.getElementById('guideOrderImagePreview');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            const loadingEl = document.getElementById('orderOcrLoading');
+            loadingEl.style.display = 'block';
+
+            Tesseract.recognize(
+                file,
+                'kor+eng',
+                { logger: m => console.log(m) }
+            ).then(({ data: { text } }) => {
+                loadingEl.style.display = 'none';
+                if (text && text.trim() !== "") {
+                    document.getElementById('guideOrderText').value = "--- [AI OCR 인식 결과] ---\n" + text.trim();
+                    alert("✨ 행사지시서 글자 인식이 완료되어 텍스트 상자에 반영되었습니다!");
+                } else {
+                    alert("⚠️ 사진에서 인식된 텍스트가 없습니다. 다시 선명하게 촬영해 주세요.");
+                }
+            }).catch(err => {
+                loadingEl.style.display = 'none';
+                console.error(err);
+                alert("❌ 글자 인식 중 오류가 발생했습니다.");
+            });
+        }
+
+        // ⭐ 고객 명단 사진 OCR 자동 인식 기능
+        function processCustomerOCR(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const preview = document.getElementById('customerImagePreview');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            const loadingEl = document.getElementById('customerOcrLoading');
+            loadingEl.style.display = 'block';
+
+            Tesseract.recognize(
+                file,
+                'kor+eng',
+                { logger: m => console.log(m) }
+            ).then(({ data: { text } }) => {
+                loadingEl.style.display = 'none';
+                if (text && text.trim() !== "") {
+                    alert("✨ 고객 서류 인식 완료!\n인식된 내용 일부를 첫 번째 고객 요청사항에 반영합니다.");
+                    const firstReq = document.querySelector('.cust-req');
+                    if(firstReq) {
+                        firstReq.value = "OCR 추출: " + text.substring(0, 40) + "...";
+                    }
+                } else {
+                    alert("⚠️ 명단 사진에서 텍스트를 찾지 못했습니다.");
+                }
+            }).catch(err => {
+                loadingEl.style.display = 'none';
+                console.error(err);
+                alert("❌ 명단 분석 중 오류가 발생했습니다.");
+            });
+        }
+
+        function previewImage(event, previewId) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const output = document.getElementById(previewId);
+                if(output) {
+                    output.src = reader.result;
+                    output.style.display = 'block';
+                }
+            };
+            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
         }
 
         function renderScheduleCalendar() {
@@ -759,9 +842,7 @@
                 let dateKey = `2026-${monthStr}-${dayStr}`;
 
                 cell.onclick = (function(k) {
-                    return function(e) {
-                        openScheduleModal(k);
-                    };
+                    return function() { openScheduleModal(k); };
                 })(dateKey);
 
                 let numDiv = document.createElement('div');
@@ -777,9 +858,7 @@
                     if (currDate >= sDate && currDate <= eDate) {
                         let badge = document.createElement('div');
                         badge.className = 'calendar-event-badge';
-                        if(team.id === activeTeamId) {
-                            badge.style.background = '#34a853';
-                        }
+                        if(team.id === activeTeamId) badge.style.background = '#34a853';
                         badge.innerText = `🌴 ${team.code}`;
                         cell.appendChild(badge);
                     }
@@ -813,10 +892,10 @@
             while(curr <= eDate) {
                 let year = curr.getFullYear();
                 let month = String(curr.getMonth() + 1).padStart(2, '0');
-                let day = String(curr.getDate()).padStart ? String(curr.getDate()).padStart(2, '0') : String(curr.getDate()).padStart(2, '0');
+                let day = String(curr.getDate()).padStart(2, '0');
                 let dateKey = `${year}-${month}-${day}`;
                 
-                let scheduleText = dailySchedules[dateKey] || '등록된 일정이 없습니다. (캘린더 날짜를 눌러 추가하세요)';
+                let scheduleText = dailySchedules[dateKey] || '등록된 일정이 없습니다.';
 
                 let card = document.createElement('div');
                 card.className = 'timeline-card';
@@ -825,9 +904,7 @@
                         <span>🗓️ ${dayCount}일차 (${dateKey})</span>
                         <button class="btn-add" style="width: auto; padding: 3px 8px; margin: 0; font-size: 11px;" onclick="openScheduleModal('${dateKey}')">편집</button>
                     </div>
-                    <div class="timeline-card-content">
-                        ${scheduleText.replace(/\n/g, '<br>')}
-                    </div>
+                    <div class="timeline-card-content">${scheduleText.replace(/\n/g, '<br>')}</div>
                 `;
                 container.appendChild(card);
 
@@ -849,42 +926,18 @@
 
         function saveDailySchedule() {
             const val = document.getElementById('modalScheduleInput').value.trim();
-            if(val === "") {
-                delete dailySchedules[selectedDateKeyForModal];
-            } else {
-                dailySchedules[selectedDateKeyForModal] = val;
-            }
+            if(val === "") delete dailySchedules[selectedDateKeyForModal];
+            else dailySchedules[selectedDateKeyForModal] = val;
             closeModal();
             renderScheduleCalendar();
             renderDetailTimeline();
         }
 
-        function previewImage(event, previewId) {
-            const reader = new FileReader();
-            reader.onload = function(){
-                const output = document.getElementById(previewId);
-                if(output) {
-                    output.src = reader.result;
-                    output.style.display = 'block';
-                }
-            };
-            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
-        }
-
-        function previewGuideOrderImage(event) {
-            previewImage(event, 'guideOrderImagePreview');
-        }
-
-        function previewCustomerImage(event) {
-            previewImage(event, 'customerImagePreview');
-        }
-
         function addNewEmptyRow() {
-            const todayStr = '2026-09-17';
             const tbody = document.getElementById('extraTableBody');
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="date" value="${todayStr}" onchange="calculate()"></td>
+                <td><input type="date" value="2026-09-17" onchange="calculate()"></td>
                 <td><input type="text" value="" placeholder="내용 입력" oninput="calculate()"></td>
                 <td><input type="number" value="" placeholder="0" oninput="calculate()"></td>
                 <td style="text-align: center;"><button class="btn-del" onclick="removeRow(this)">삭제</button></td>
@@ -909,7 +962,6 @@
             });
 
             let totalFinalIncome = teamIncome + extraTotal;
-
             document.getElementById('resTeamIncome').innerText = teamIncome.toFixed(2);
             document.getElementById('resExtraIncome').innerText = extraTotal.toFixed(2);
             document.getElementById('resTotalFinalIncome').innerText = totalFinalIncome.toFixed(2);
