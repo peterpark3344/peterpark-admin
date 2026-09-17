@@ -496,7 +496,7 @@
         let tourPresets = JSON.parse(localStorage.getItem('tourPresetsOptions')) || [
             "[공항 미팅] ✈️ 공항 픽업 -> 가이드 미팅 -> 🏨 호텔 체크인 및 휴식",
             "[남섬 투어] 🏝️ 호핑투어 -> 혼똠섬 케이블카 & 워터파크 -> 🌉 키스브릿지",
-            "[북섬 투-어] 🦁 빈사파리 탐방 -> 🏰 빈원더스 테마파크 -> 🌙 그랜드월드 야간 투어",
+            "[북섬 투어] 🦁 빈사파리 탐방 -> 🏰 빈원더스 테마파크 -> 🌙 그랜드월드 야간 투어",
             "[시내/사루 투어] 🛕 호국사 방문 -> 🏖️ 사오비치 해변 -> 🦞 현지 해산물 중식 및 마사지",
             "[공항 샌딩] 🍲 중식 및 기념품 쇼핑 -> 🛍️ 마트 장보기 -> 공항 이동 (귀국)"
         ];
@@ -730,7 +730,6 @@
             return { adult, child };
         }
 
-        // 항공편 행 추가 함수
         function renderModalFlightRows(flightsArray) {
             const container = document.getElementById('modalFlightListContainer');
             container.innerHTML = '';
@@ -1003,7 +1002,7 @@
                 team.settlementCond = document.getElementById('selectSettlementCond').value;
                 team.hotels = hotels;
                 team.paxInfo = `성인 ${adultVal}명, 소아 ${childVal}명 (총 ${totalVal}명)`;
-                team.gigaTip = `$${tipNum} × ${totalVal}명 = $${tipNum * totalVal}`;
+                team.gigaTip: `$${tipNum} × ${totalVal}명 = $${tipNum * totalVal}`;
                 team.customers = customers;
             }
 
