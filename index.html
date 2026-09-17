@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>푸꾸옥 가이드 수익 및 행사 관리</title>
+    <!-- Firebase SDK (v9 호환 모드) 추가 -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -174,12 +177,13 @@
             margin-top: 2px;
             border-radius: 2px;
             line-height: 1.2;
+            white-space: pre-wrap;
         }
         .detail-timeline {
             margin-top: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
         .timeline-card {
             background: #ffffff;
@@ -196,7 +200,7 @@
             font-weight: bold;
             font-size: 14px;
             color: #1a73e8;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             border-bottom: 1px solid #f1f3f4;
             padding-bottom: 5px;
         }
@@ -252,15 +256,13 @@
 <body>
 
     <h1>🌴 푸꾸옥 가이드 행사 및 일정 관리</h1>
-    <p class="subtitle">투어 코스 자유 편집 및 맞춤 일정 관리 버전</p>
+    <p class="subtitle">Firebase 실시간 클라우드 데이터베이스 연동 버전</p>
 
     <!-- 행사 기간 선택 바 -->
     <div class="team-selector-bar">
         <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
             <span>📅 행사 기간 선택:</span>
-            <select id="teamSelectDropdown" onchange="onTeamSelectChange(this)" style="flex: 1; font-weight: bold; color: #1a73e8;">
-                <!-- 동적 생성 -->
-            </select>
+            <select id="teamSelectDropdown" onchange="onTeamSelectChange(this)" style="flex: 1; font-weight: bold; color: #1a73e8;"></select>
         </div>
         <div style="display: flex; gap: 4px;">
             <button class="btn-del" onclick="deleteActiveTeam()" title="현재 선택된 행사업무 삭제">🗑️ 삭제</button>
@@ -268,43 +270,22 @@
         </div>
     </div>
 
-    <!-- 📋 행사지시서 상세 정보 조회 화면 -->
+    <!-- 📋 행사지시서 상세 정보 -->
     <div class="section-title">
         <span>📋 행사지시서 상세 정보</span>
         <button class="btn-main" onclick="openEditDirectiveModal()">📝 지시서 수정</button>
     </div>
     <table>
-        <tr>
-            <th>투어 코드</th>
-            <td id="viewTourCode">-</td>
-        </tr>
-        <tr>
-            <th>행사 일정 (기간)</th>
-            <td id="viewDateRange" style="font-weight: bold; color: #1a73e8;">-</td>
-        </tr>
-        <tr>
-            <th>가이드 정보 (한/베)</th>
-            <td id="viewGuideInfo">-</td>
-        </tr>
-        <tr>
-            <th>인원 정보</th>
-            <td id="viewPaxInfo">-</td>
-        </tr>
-        <tr>
-            <th>호텔 및 룸타입 정보</th>
-            <td id="viewHotelInfo" style="line-height: 1.4;">-</td>
-        </tr>
-        <tr>
-            <th>정산 조건</th>
-            <td id="viewSettlementCond">-</td>
-        </tr>
-        <tr>
-            <th>기가팁 금액</th>
-            <td id="viewGigaTip">-</td>
-        </tr>
+        <tr><th>투어 코드</th><td id="viewTourCode">-</td></tr>
+        <tr><th>행사 일정 (기간)</th><td id="viewDateRange" style="font-weight: bold; color: #1a73e8;">-</td></tr>
+        <tr><th>가이드 정보 (한/베)</th><td id="viewGuideInfo">-</td></tr>
+        <tr><th>인원 정보</th><td id="viewPaxInfo">-</td></tr>
+        <tr><th>호텔 및 룸타입 정보</th><td id="viewHotelInfo" style="line-height: 1.4;">-</td></tr>
+        <tr><th>정산 조건</th><td id="viewSettlementCond">-</td></tr>
+        <tr><th>기가팁 금액</th><td id="viewGigaTip">-</td></tr>
     </table>
 
-    <!-- 👥 고객 명단 및 요청사항 관리 -->
+    <!-- 👥 고객 명단 및 요청사항 -->
     <div class="section-title">
         <span>👥 고객 명단 및 요청사항</span>
         <button class="btn-main" onclick="openEditDirectiveModal()">＋ 고객 편집</button>
@@ -318,14 +299,12 @@
                 <th style="width: 25%;">요청사항</th>
             </tr>
         </thead>
-        <tbody id="viewCustomerTableBody">
-            <!-- 자바스크립트 동적 렌더링 -->
-        </tbody>
+        <tbody id="viewCustomerTableBody"></tbody>
     </table>
 
-    <!-- 📌 선택된 날짜 기간별 투어 일정 정리 -->
+    <!-- 📌 날짜별 투어 및 식사 일정 -->
     <div class="section-title" style="margin-top: 20px;">
-        <span>📌 선택된 날짜 기간별 투어 일정 정리</span>
+        <span>📌 선택된 날짜 기간별 투어 및 식사 일정 정리</span>
     </div>
     <div class="detail-timeline" id="detailTimelineContainer"></div>
 
@@ -338,7 +317,7 @@
         <div class="calendar-grid" id="scheduleCalendarGrid"></div>
     </div>
 
-    <!-- 📝 행사지시서 및 고객 입력/수정 모달창 -->
+    <!-- 📝 지시서 및 고객 모달창 -->
     <div id="directiveModal" class="modal">
         <div class="modal-content">
             <h3 id="directiveModalTitle">📝 행사 기간 및 가이드 상세 편집</h3>
@@ -429,7 +408,7 @@
         </div>
     </div>
 
-    <!-- 🗺️ 푸꾸옥 투어 코스 선택 및 관리 모달창 -->
+    <!-- 🗺️ 모달: 자주 쓰는 코스 선택 -->
     <div id="schedulePresetModal" class="modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -437,52 +416,63 @@
                 <button class="btn-main" style="background-color: #34a853; padding: 4px 8px; font-size: 11px;" onclick="openPresetManageModal()">⚙️ 코스 항목 관리</button>
             </div>
             <p style="font-size: 11px; color: #666; margin-bottom: 10px;">선택하시면 해당 날짜 일정에 내용이 바로 입력됩니다.</p>
-            <div id="presetListContainer">
-                <!-- 동적 렌더링 -->
-            </div>
+            <div id="presetListContainer"></div>
             <button class="btn-del" style="width: 100%; padding: 8px; margin-top: 10px;" onclick="closePresetModal()">닫기</button>
         </div>
     </div>
 
-    <!-- ⚙️ 투어 코스 항목 편집(추가/삭제) 모달창 -->
+    <!-- ⚙️ 모달: 코스 항목 편집 -->
     <div id="presetManageModal" class="modal">
         <div class="modal-content">
             <h3>⚙️ 투어 코스 템플릿 관리</h3>
             <p style="font-size: 11px; color: #666; margin-bottom: 10px;">자주 쓰는 코스 문구를 추가하거나 삭제할 수 있습니다.</p>
             
             <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <input type="text" id="newPresetInput" placeholder="예: [선셋 투어] 🌅 디너 크루즈 탑승 -> 선셋 감상" style="flex: 1;">
+                <input type="text" id="newPresetInput" placeholder="예: [선셋 투어] 🌅 디너 크루즈 탑승" style="flex: 1;">
                 <button class="btn-main" style="background-color: #34a853;" onclick="addTourPresetItem()">추가</button>
             </div>
 
-            <div id="presetManageListContainer" style="display: flex; flex-direction: column; gap: 6px; max-height: 250px; overflow-y: auto; margin-bottom: 10px;">
-                <!-- 동적 렌더링 -->
-            </div>
-
+            <div id="presetManageListContainer" style="display: flex; flex-direction: column; gap: 6px; max-height: 250px; overflow-y: auto; margin-bottom: 10px;"></div>
             <button class="btn-main" style="width: 100%; padding: 8px;" onclick="closePresetManageModal()">완료 (돌아가기)</button>
         </div>
     </div>
 
     <script>
+        // 🔥 화면에 생성된 발급 키(phuquoc-guide) 적용 완료
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4tfcr-Yhs4no5Cz2_OH1ZsUhjHmm0kBs",
+            authDomain: "phuquoc-guide.firebaseapp.com",
+            databaseURL: "https://phuquoc-guide-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "phuquoc-guide",
+            storageBucket: "phuquoc-guide.firebasestorage.app",
+            messagingSenderId: "127280212164",
+            appId: "1:127280212164:web:871586b92db29d1332c191"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 기본 초기 데이터 설정
         let dropdownOptions = {
-            koreaGuide: JSON.parse(localStorage.getItem('koreaGuideOptions')) || ["박재우", "김가이드", "이한국"],
-            vietnamGuide: JSON.parse(localStorage.getItem('vietnamGuideOptions')) || ["Thiện (-0378461735)", "Nam (-0901234567)", "Huy (-0912345678)"],
-            hotelList: JSON.parse(localStorage.getItem('hotelListOptions')) || [
+            koreaGuide: ["박재우", "김가이드", "이한국"],
+            vietnamGuide: ["Thiện (-0378461735)", "Nam (-0901234567)", "Huy (-0912345678)"],
+            hotelList: [
                 "JW Marriott Phu Quoc Emerald Bay Resort & Spa", "InterContinental Phu Quoc Long Beach Resort",
                 "Regent Phu Quoc", "New World Phu Quoc Resort", "Premier Village Phu Quoc Resort",
                 "Salinda Resort Phu Quoc Island", "Novotel Phu Quoc Resort", "Pullman Phu Quoc Beach Resort"
             ],
-            roomTypes: JSON.parse(localStorage.getItem('roomTypesOptions')) || [
+            roomTypes: [
                 "Superior Twin", "Superior Double", "Deluxe Twin", "Deluxe Double", "Executive Suite", "1 Bedroom Pool Villa"
             ],
-            settlement: JSON.parse(localStorage.getItem('settlementOptions')) || [
+            settlement: [
                 "메꾸기 1인 $80 / 회사 5:5 / 옵션가능 / 쇼핑 3회",
                 "노옵션 / 노쇼핑 / 단독 행사",
                 "회사 6:4 / 옵션가능 / 쇼핑 2회"
             ]
         };
 
-        let tourPresets = JSON.parse(localStorage.getItem('tourPresetsOptions')) || [
+        let tourPresets = [
             "[공항 미팅] ✈️ 공항 픽업 -> 가이드 미팅 -> 🏨 호텔 체크인 및 휴식",
             "[남섬 투어] 🏝️ 호핑투어 -> 혼똠섬 케이블카 & 워터파크 -> 🌉 키스브릿지",
             "[북섬 투어] 🦁 빈사파리 탐방 -> 🏰 빈원더스 테마파크 -> 🌙 그랜드월드 야간 투어",
@@ -490,7 +480,7 @@
             "[공항 샌딩] 🍲 중식 및 기념품 쇼핑 -> 🛍️ 마트 장보기 -> 공항 이동 (귀국)"
         ];
 
-        let teamsData = JSON.parse(localStorage.getItem('teamsData')) || [
+        let teamsData = [
             {
                 id: 11,
                 tourCode: "TEAM11",
@@ -506,22 +496,37 @@
             }
         ];
 
-        let activeTeamId = teamsData.length > 0 ? teamsData[0].id : 11;
+        let activeTeamId = 11;
         let isCreatingNewTeam = false;
         let targetPresetDateKey = null;
+        let dailySchedules = {};
 
-        let dailySchedules = JSON.parse(localStorage.getItem('dailySchedules')) || {};
-
+        // ☁️ Firebase Realtime Database 데이터 자동 저장
         function saveAllToLocalStorage() {
-            localStorage.setItem('teamsData', JSON.stringify(teamsData));
-            localStorage.setItem('dailySchedules', JSON.stringify(dailySchedules));
-            localStorage.setItem('tourPresetsOptions', JSON.stringify(tourPresets));
-            localStorage.setItem('koreaGuideOptions', JSON.stringify(dropdownOptions.koreaGuide));
-            localStorage.setItem('vietnamGuideOptions', JSON.stringify(dropdownOptions.vietnamGuide));
-            localStorage.setItem('hotelListOptions', JSON.stringify(dropdownOptions.hotelList));
-            localStorage.setItem('roomTypesOptions', JSON.stringify(dropdownOptions.roomTypes));
-            localStorage.setItem('settlementOptions', JSON.stringify(dropdownOptions.settlement));
+            db.ref('phuquoc_data/').set({
+                teamsData: teamsData,
+                dailySchedules: dailySchedules,
+                tourPresetsOptions: tourPresets,
+                dropdownOptions: dropdownOptions
+            });
         }
+
+        // ☁️ 앱 실행 및 데이터 수정 시 실시간 동기화
+        db.ref('phuquoc_data/').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                if (data.teamsData) teamsData = data.teamsData;
+                if (data.dailySchedules) dailySchedules = data.dailySchedules;
+                if (data.tourPresetsOptions) tourPresets = data.tourPresetsOptions;
+                if (data.dropdownOptions) dropdownOptions = data.dropdownOptions;
+                
+                let activeExists = teamsData.some(t => t.id === activeTeamId);
+                if (!activeExists && teamsData.length > 0) {
+                    activeTeamId = teamsData[0].id;
+                }
+                loadTeamData(activeTeamId);
+            }
+        });
 
         function getZodiac(year) {
             const animals = [
@@ -972,7 +977,18 @@
 
             while(curr <= eDate) {
                 let dateKey = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
-                let scheduleText = dailySchedules[dateKey] || '';
+                let scheduleData = dailySchedules[dateKey];
+                
+                let tourText = '', bMeal = '', lMeal = '', dMeal = '', remarkText = '';
+                if(typeof scheduleData === 'object' && scheduleData !== null) {
+                    tourText = scheduleData.tour || '';
+                    bMeal = scheduleData.breakfast || '';
+                    lMeal = scheduleData.lunch || '';
+                    dMeal = scheduleData.dinner || '';
+                    remarkText = scheduleData.remark || '';
+                } else if(typeof scheduleData === 'string') {
+                    tourText = scheduleData;
+                }
 
                 let card = document.createElement('div');
                 card.className = 'timeline-card';
@@ -984,7 +1000,25 @@
                             <button class="btn-main" style="padding: 3px 8px; font-size: 11px; background-color: #34a853;" onclick="saveDirectSchedule('${dateKey}', this)">저장</button>
                         </div>
                     </div>
-                    <textarea class="timeline-textarea-${dateKey}" style="width: 100%; height: 65px; font-size: 12px; padding: 6px; box-sizing: border-box; resize: vertical;" placeholder="일정을 직접 수정하거나 '코스 선택' 버튼으로 채워보세요.">${scheduleText}</textarea>
+                    
+                    <div style="margin-bottom: 6px;">
+                        <label style="font-size: 11px; font-weight: bold; color: #1a73e8; display: block; margin-bottom: 2px;">🌴 주요 투어 일정</label>
+                        <textarea class="timeline-textarea-${dateKey}" style="width: 100%; height: 50px; font-size: 12px; padding: 6px; box-sizing: border-box; resize: vertical;" placeholder="투어 일정을 직접 입력하거나 상단 '코스 선택' 버튼으로 채워보세요.">${tourText}</textarea>
+                    </div>
+
+                    <div style="margin-bottom: 6px;">
+                        <label style="font-size: 11px; font-weight: bold; color: #1a73e8; display: block; margin-bottom: 2px;">🍱 식사 정보 (조식 / 중식 / 석식)</label>
+                        <div style="display: flex; gap: 4px;">
+                            <input type="text" class="meal-b-${dateKey}" value="${bMeal}" placeholder="🍳 조식" style="flex: 1; min-width: 0; font-size: 11px; padding: 4px;">
+                            <input type="text" class="meal-l-${dateKey}" value="${lMeal}" placeholder="🍲 중식" style="flex: 1; min-width: 0; font-size: 11px; padding: 4px;">
+                            <input type="text" class="meal-d-${dateKey}" value="${dMeal}" placeholder="🦞 석식" style="flex: 1; min-width: 0; font-size: 11px; padding: 4px;">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 2px;">📌 비고 및 특이사항</label>
+                        <input type="text" class="remark-${dateKey}" value="${remarkText}" placeholder="옵션/차량시간/마사지 예약 등" style="font-size: 11px; padding: 4px;">
+                    </div>
                 `;
                 container.appendChild(card);
                 curr.setDate(curr.getDate() + 1);
@@ -1003,9 +1037,7 @@
                 btn.innerText = preset;
                 btn.onclick = function() {
                     let textarea = document.querySelector(`.timeline-textarea-${targetPresetDateKey}`);
-                    if(textarea) {
-                        textarea.value = preset;
-                    }
+                    if(textarea) textarea.value = preset;
                     closePresetModal();
                 };
                 container.appendChild(btn);
@@ -1075,17 +1107,26 @@
 
         function saveDirectSchedule(dateKey, btnObj) {
             let card = btnObj.closest('.timeline-card');
-            let textarea = card.querySelector('textarea');
-            let val = textarea.value.trim();
+            let tourVal = card.querySelector(`.timeline-textarea-${dateKey}`).value.trim();
+            let bMeal = card.querySelector(`.meal-b-${dateKey}`).value.trim();
+            let lMeal = card.querySelector(`.meal-l-${dateKey}`).value.trim();
+            let dMeal = card.querySelector(`.meal-d-${dateKey}`).value.trim();
+            let remarkVal = card.querySelector(`.remark-${dateKey}`).value.trim();
 
-            if(val === "") {
+            if(!tourVal && !bMeal && !lMeal && !dMeal && !remarkVal) {
                 delete dailySchedules[dateKey];
             } else {
-                dailySchedules[dateKey] = val;
+                dailySchedules[dateKey] = {
+                    tour: tourVal,
+                    breakfast: bMeal,
+                    lunch: lMeal,
+                    dinner: dMeal,
+                    remark: remarkVal
+                };
             }
             saveAllToLocalStorage();
             renderScheduleCalendar();
-            alert(`[${dateKey}] 일정이 저장되었습니다!`);
+            alert(`[${dateKey}] 일정 및 식사 정보가 저장되었습니다!`);
         }
 
         function renderScheduleCalendar() {
@@ -1142,7 +1183,23 @@
                 if (dailySchedules[dateKey]) {
                     let item = document.createElement('div');
                     item.className = 'calendar-schedule-item';
-                    item.innerText = dailySchedules[dateKey];
+                    
+                    let sched = dailySchedules[dateKey];
+                    let displayText = '';
+                    if(typeof sched === 'object' && sched !== null) {
+                        displayText = sched.tour || '';
+                        let meals = [];
+                        if(sched.breakfast) meals.push(`조:${sched.breakfast}`);
+                        if(sched.lunch) meals.push(`중:${sched.lunch}`);
+                        if(sched.dinner) meals.push(`석:${sched.dinner}`);
+                        if(meals.length > 0) {
+                            displayText += (displayText ? '\n' : '') + `🍱 ` + meals.join(' / ');
+                        }
+                    } else {
+                        displayText = sched;
+                    }
+
+                    item.innerText = displayText;
                     cell.appendChild(item);
                 }
 
