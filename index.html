@@ -4,128 +4,920 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>푸꾸옥 가이드 수익 및 행사 관리</title>
-    <!-- OCR(문자 인식)을 위한 Tesseract.js 라이브러리 추가 -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; padding: 15px; line-height: 1.5; }
-        h2 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .section-box { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        h3 { font-size: 16px; color: #2980b9; margin-top: 0; border-left: 4px solid #3498db; padding-left: 8px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        input[type="text"], input[type="date"], textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-size: 14px; }
-        textarea { height: 120px; resize: vertical; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f1f8ff; }
-        .btn { display: inline-block; background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-align: center; width: 100%; margin-bottom: 5px; font-size: 14px; }
-        .btn:hover { background-color: #2980b9; }
-        .btn-green { background-color: #2ecc71; }
-        .btn-green:hover { background-color: #27ae60; }
-        .loading { font-size: 13px; color: #e67e22; text-align: center; font-weight: bold; margin-bottom: 5px; display: none; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f4f6f9;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        h1 {
+            color: #1a73e8;
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        
+        /* 탭 네비게이션 스타일 */
+        .tab-nav {
+            display: flex;
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: #1a73e8;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-title {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            padding: 8px 12px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            border-left: 4px solid #1a73e8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            background: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+            color: #333;
+        }
+        th {
+            background-color: #f1f3f4;
+        }
+        input[type="number"], input[type="text"], input[type="date"], textarea, select {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #333;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        textarea {
+            resize: vertical;
+            height: 190px;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+        .camera-btn-label {
+            display: block;
+            background-color: #1a73e8;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input[type="file"] { display: none; }
+        .preview-container img {
+            max-width: 100%;
+            max-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            display: none;
+            margin: 8px auto 0 auto;
+        }
+        .btn-add {
+            background-color: #34a853;
+            color: white;
+            border: none;
+            padding: 8px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+            margin-top: 5px;
+        }
+        .btn-save {
+            background-color: #f9ab00;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-del {
+            background-color: #ea4335;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .result-box {
+            background-color: #e6f4ea;
+            border: 1px solid #ceead6;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        .result-box h3 {
+            margin-top: 0;
+            color: #137333;
+            font-size: 15px;
+            border-bottom: 1px solid #ceead6;
+            padding-bottom: 5px;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #333;
+        }
+        .result-row.highlight {
+            font-weight: bold;
+            font-size: 15px;
+            color: #d93025;
+            margin-top: 6px;
+            border-top: 1px dashed #ceead6;
+            padding-top: 6px;
+        }
+        /* 나이 및 띠 표시 스타일 */
+        .age-display {
+            display: block;
+            background: #e8f0fe;
+            color: #1a73e8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 4px;
+            text-align: center;
+            border: 1px dashed #b9d3fc;
+        }
+
+        /* 캘린더 스타일 */
+        .calendar-container {
+            margin-top: 15px;
+            background: #121212;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            color: #e0e0e0;
+        }
+        .calendar-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: #8ab4f8;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .calendar-day-name {
+            text-align: center;
+            font-weight: bold;
+            background: #2c2c2c;
+            padding: 5px 0;
+            font-size: 11px;
+            color: #aaa;
+        }
+        .calendar-cell {
+            min-height: 95px;
+            border: 1px solid #2a2a2a;
+            border-radius: 2px;
+            padding: 3px;
+            font-size: 10px;
+            background: #181818;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .calendar-cell:hover {
+            background: #222;
+        }
+        .day-number {
+            font-weight: bold;
+            color: #888;
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+        .calendar-event-badge {
+            background: #1a73e8;
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .calendar-schedule-item {
+            background: #262626;
+            border-left: 2px solid #34a853;
+            color: #ddd;
+            font-size: 9px;
+            padding: 2px 3px;
+            margin-top: 2px;
+            border-radius: 2px;
+            line-height: 1.2;
+            word-break: keep-all;
+        }
+        .team-selector-bar {
+            background: #e8f0fe;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: #1a73e8;
+        }
+
+        /* 상세 일정 카드 스타일 */
+        .detail-timeline {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .timeline-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-left: 5px solid #1a73e8;
+            border-radius: 6px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .timeline-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: #1a73e8;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #f1f3f4;
+            padding-bottom: 5px;
+        }
+        .timeline-card-content {
+            font-size: 12px;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        /* 일정 편집 모달창 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            color: #333;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #1a73e8;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h2>🌴 푸꾸옥 가이드 수익 및 행사 관리</h2>
+    <h1>🌴 푸꾸옥 가이드 수익 및 행사 관리</h1>
+    <p class="subtitle">통합 가이드 대시보드</p>
 
-    <!-- 0. 기본 행사 정보 설정 -->
-    <div class="section-box">
-        <h3>0. 기본 행사 정보 설정</h3>
-        <label>투어 코드</label>
-        <input type="text" id="tourCode" value="BVE904ZE5W">
-        <label>행사 기간</label>
-        <div style="display: flex; gap: 5px;">
-            <input type="date" id="startDate" value="2026-09-17">
-            <span style="align-self: center;">~</span>
-            <input type="date" id="endDate" value="2026-09-20">
+    <!-- 탭 메뉴 버튼 -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-schedule')">📋 행사지시서 & 고객명단</button>
+        <button class="tab-btn" onclick="switchTab('tab-settlement')">💰 수익 및 정산 관리</button>
+    </div>
+
+    <!-- [탭 1] 행사지시서 & 고객명단 -->
+    <div id="tab-schedule" class="tab-content active">
+        
+        <div class="team-selector-bar">
+            <span>현재 팀: <span id="currentTeamTitle">행사 선택</span></span>
+            <button class="btn-add" style="width: auto; padding: 5px 10px; margin: 0;" onclick="addNewTeam()">＋ 새 행사 등록</button>
+        </div>
+
+        <div class="section-title">0. 기본 행사 정보 설정 (투어 코드 및 일정)</div>
+        <table>
+            <tr>
+                <th style="width: 35%;">투어 코드</th>
+                <td><input type="text" id="teamCodeInput" value="BVE904ZE5W"></td>
+            </tr>
+            <tr>
+                <th>행사 기간 (시작 ~ 종료)</th>
+                <td>
+                    <input type="date" id="teamStartDate" value="2026-09-17" style="width: 48%; display: inline;"> ~ 
+                    <input type="date" id="teamEndDate" value="2026-09-20" style="width: 48%; display: inline;">
+                </td>
+            </tr>
+        </table>
+
+        <div class="section-title">1. 행사지시서 사진 촬영 / 업로드</div>
+        <div style="margin-bottom: 8px;">
+            <label for="guideOrderPhoto" class="camera-btn-label">
+                📸 행사지시서 카메라로 찍기 / 갤러리 선택
+            </label>
+            <input type="file" id="guideOrderPhoto" accept="image/*" capture="environment" onchange="previewGuideOrderImage(event)">
+        </div>
+        <div class="preview-container">
+            <img id="guideOrderImagePreview" alt="행사지시서 미리보기">
+        </div>
+
+        <div class="section-title" style="margin-top: 15px;">📋 행사지시서 내용</div>
+        <textarea id="guideOrderText">투어 코드: BVE904ZE5W
+일정: 2026-09-17 ~ 2026-09-20 (3박 4일)
+가이드: KO: 박재우 / VN: Thiện (-0378461735)
+인원: ADT 5명, CHD 5명 (총 10명)
+호텔 정보:
+ - NOVOTEL (김용석 Superior Twin * 3) - 예약번호: 1090791
+ - BEST WESTERN (정진선 DELUXE TWN * 1) - 예약번호: 643000
+정산 조건: 메꾸기 1인 $80(5+5chd) / 회사 5:5 정산 조건 / 옵션가능 / 쇼핑 3회
+기가팁 금액: $50 × 10명 = $500</textarea>
+
+        <div class="section-title" style="margin-top: 15px;">📷 고객 명단 서류 촬영 / 업로드</div>
+        <div style="margin-bottom: 8px;">
+            <label for="customerPhoto" class="camera-btn-label">
+                📸 고객 명단/서류 카메라로 찍기 / 갤러리 선택
+            </label>
+            <input type="file" id="customerPhoto" accept="image/*" capture="environment" onchange="previewCustomerImage(event)">
+        </div>
+        <div class="preview-container">
+            <img id="customerImagePreview" alt="고객 서류 미리보기">
+        </div>
+
+        <div class="section-title" style="margin-top: 15px;">👥 고객 명단 및 요청사항 관리</div>
+        <table class="extra-table" id="customerTable">
+            <thead>
+                <tr>
+                    <th style="width: 32%;">고객 성함 (영문 / 한글)</th>
+                    <th style="width: 30%;">생년월일 (1976-01-01)</th>
+                    <th style="width: 15%;">예약번호</th>
+                    <th style="width: 23%;">요청사항</th>
+                </tr>
+            </thead>
+            <tbody id="customerTableBody">
+                <!-- 자바스크립트가 동적으로 생성 및 나이/띠 계산을 수행합니다 -->
+            </tbody>
+        </table>
+        <button class="btn-add" onclick="addNewCustomerRow()">＋ 고객 추가하기</button>
+
+        <!-- 수정 내용 저장 버튼 -->
+        <button class="btn-save" onclick="saveActiveTeamData()">💾 수정 사항 저장 및 반영하기</button>
+
+        <!-- 캘린더 -->
+        <div class="section-title" style="margin-top: 20px;">🗓️ 월별 캘린더 (날짜를 클릭해 일정을 추가·수정하세요)</div>
+        <div class="calendar-container">
+            <div class="calendar-header">2026년 9월 행사 일정표</div>
+            <div class="calendar-grid" id="scheduleCalendarGrid"></div>
+        </div>
+
+        <!-- 일자별 상세 정리 섹션 -->
+        <div class="section-title" style="margin-top: 20px;">📌 일자별 상세 투어 일정 정리</div>
+        <div class="detail-timeline" id="detailTimelineContainer">
+            <!-- 자바스크립트가 일자별 카드를 동적으로 렌더링합니다 -->
         </div>
     </div>
 
-    <!-- 1. 행사지시서 사진 촬영 및 AI 인식 -->
-    <div class="section-box">
-        <h3>1. 행사지시서 사진 촬영 / 업로드</h3>
-        <input type="file" id="orderCamera" accept="image/*" capture="environment" style="display:none;" onchange="processOCR(this, 'orderText', 'orderLoading')">
-        <button class="btn" onclick="document.getElementById('orderCamera').click()">📸 행사지시서 카메라로 찍기 / 갤러리 선택</button>
-        <div id="orderLoading" class="loading">🔄 사진에서 글자를 읽어오는 중입니다... 잠시만 기다려주세요!</div>
-        
-        <label>📋 행사지시서 내용 (자동 입력 또는 직접 수정)</label>
-        <textarea id="orderText">투어 코드: BVE904ZE5W 일정: 2026-09-17 ~ 2026-09-20 (3박 4일) 가이드: KO: 박재우 / VN: Thiện (-0378461735) 인원: ADT 5명, CHD 5명 (총 10명) FLIGHT IN: ZE981 22:25 / FLIGHT OUT: ZE982, 23:25 호텔 정보: - NOVOTEL (김용석 Superior Twin * 3) - 1090791 - BEST WESTERN (정진선 DELUXE TWN * 1) - 643000 정산 조건: 메꾸기 1인 $80(5+5chd) / 회사 5:5 정산 조건 / 옵션가능 / 쇼핑 3회 기가팁 금액: $50 × 10명 = $500</textarea>
-    </div>
+    <!-- [탭 2] 수익 및 정산 관리 -->
+    <div id="tab-settlement" class="tab-content">
+        <div class="section-title">0. 정산서 사진 촬영 / 업로드</div>
+        <div style="margin-bottom: 8px;">
+            <label for="settlementPhoto" class="camera-btn-label">
+                📸 정산서 카메라로 찍기 / 갤러리에서 선택
+            </label>
+            <input type="file" id="settlementPhoto" accept="image/*" capture="environment" onchange="previewImage(event, 'imagePreview')">
+        </div>
+        <div class="preview-container">
+            <img id="imagePreview" alt="정산서 미리보기">
+        </div>
 
-    <!-- 2. 고객 명단 서류 촬영 및 AI 인식 -->
-    <div class="section-box">
-        <h3>2. 고객 명단 서류 촬영 / 업로드</h3>
-        <input type="file" id="clientCamera" accept="image/*" capture="environment" style="display:none;" onchange="processOCR(this, 'clientTextOutput', 'clientLoading')">
-        <button class="btn" onclick="document.getElementById('clientCamera').click()">📸 고객 명단/서류 카메라로 찍기 / 갤러리 선택</button>
-        <div id="clientLoading" class="loading">🔄 명단 사진을 분석하여 글자를 추출하고 있습니다...</div>
-
-        <label>👥 고객 명단 및 요청사항 관리</label>
+        <div class="section-title">1. 팀별 투어 일정 정보</div>
         <table>
+            <tr>
+                <th style="width: 35%;">행사 인원</th>
+                <td><input type="text" id="tourPax" value="10명" oninput="calculate()"></td>
+            </tr>
+            <tr>
+                <th>마지막 날 기가팁 정산금 ($)</th>
+                <td><input type="number" id="teamGuideIncome" value="500" placeholder="500" oninput="calculate()"></td>
+            </tr>
+        </table>
+
+        <div class="section-title">2. 기타 수입 관리</div>
+        <table class="extra-table" id="extraTable">
             <thead>
                 <tr>
-                    <th>고객 성함</th>
-                    <th>생년월일</th>
-                    <th>예약번호</th>
-                    <th>요청사항</th>
+                    <th style="width: 35%;">날짜</th>
+                    <th style="width: 35%;">수입 내용</th>
+                    <th style="width: 20%;">금액 ($)</th>
+                    <th style="width: 10%; text-align: center;">관리</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="extraTableBody">
                 <tr>
-                    <td>KIM/YONGSEOK<br>김용석</td>
-                    <td>1976-01-01</td>
-                    <td>1090791</td>
-                    <td>NOVOTEL Superior Twin</td>
-                </tr>
-                <tr>
-                    <td>JUNG/JINSEON<br>정진선</td>
-                    <td>1980-01-01</td>
-                    <td>643000</td>
-                    <td>BEST WESTERN DELUXE TWN</td>
+                    <td><input type="date" value="2026-09-17" onchange="calculate()"></td>
+                    <td><input type="text" value="메꾸기 (5+5chd)" oninput="calculate()"></td>
+                    <td><input type="number" value="800" placeholder="0" oninput="calculate()"></td>
+                    <td style="text-align: center;"><button class="btn-del" onclick="removeRow(this)">삭제</button></td>
                 </tr>
             </tbody>
         </table>
-        <!-- AI가 읽어온 원문이 임시로 들어오는 공간 -->
-        <textarea id="clientTextOutput" style="display:none;"></textarea>
-        
-        <button class="btn btn-green" onclick="saveData()">💾 수정 사항 저장 및 반영하기</button>
+        <button class="btn-add" onclick="addNewEmptyRow()">＋ 기타 수입 항목 등록하기</button>
+
+        <div class="result-box">
+            <h3>📊 이번 팀 정산 및 추가 수입 요약</h3>
+            <div class="result-row">
+                <span>기가팁 정산금 ($50×10명):</span>
+                <span>$<span id="resTeamIncome">500.00</span></span>
+            </div>
+            <div class="result-row">
+                <span>기타 수입 총합계:</span>
+                <span>$<span id="resExtraIncome">800.00</span></span>
+            </div>
+            <div class="result-row highlight">
+                <span>총 수입 합계:</span>
+                <span>$<span id="resTotalFinalIncome">1300.00</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 일정 편집 모달창 -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalDateTitle">날짜 일정 편집</h3>
+            <p style="font-size: 12px; color: #666; margin-bottom: 8px;">이 날짜에 표시될 가이드 일정을 입력하거나 수정하세요.</p>
+            <textarea id="modalScheduleInput" style="height: 100px; margin-bottom: 10px;" placeholder="예: [1일차] 공항 미팅 -> 호텔 휴식"></textarea>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn-add" style="background-color: #1a73e8;" onclick="saveDailySchedule()">저장하기</button>
+                <button class="btn-del" style="flex: 1;" onclick="closeModal()">취소</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 스마트폰 카메라/갤러리 사진 인식 (OCR) 실행 함수
-        function processOCR(input, targetTextareaId, loadingId) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const loadingEl = document.getElementById(loadingId);
-                const targetEl = document.getElementById(targetTextareaId);
+        let teamsData = [
+            {
+                id: 1,
+                code: "BVE904ZE5W",
+                startDate: "2026-09-17",
+                endDate: "2026-09-20",
+                guideText: `투어 코드: BVE904ZE5W\n일정: 2026-09-17 ~ 2026-09-20 (3박 4일)\n가이드: KO: 박재우 / VN: Thiện (-0378461735)\n인원: ADT 5명, CHD 5명 (총 10명)\n호텔 정보:\n - NOVOTEL (김용석 Superior Twin * 3) - 예약번호: 1090791\n - BEST WESTERN (정진선 DELUXE TWN * 1) - 예약번호: 643000\n정산 조건: 메꾸기 1인 $80(5+5chd) / 회사 5:5 정산 조건 / 옵션가능 / 쇼핑 3회\n기가팁 금액: $50 × 10명 = $500`,
+                customers: [
+                    { enName: "KIM/YONGSEOK.MR", koName: "김용석", birth: "1976-01-01", phone: "1090791", req: "NOVOTEL Superior Twin (3방 파이널 OK)" },
+                    { enName: "JUNG/JINSEON.MS", koName: "정진선", birth: "1980-01-01", phone: "643000", req: "BEST WESTERN DELUXE TWN (1방)" }
+                ],
+                pax: "10명",
+                income: 500
+            }
+        ];
 
-                loadingEl.style.display = "block";
+        let activeTeamId = 1;
+        let selectedDateKeyForModal = "";
 
-                // Tesseract.js를 이용해 이미지 내 텍스트 추출 (한국어 + 영어 지원)
-                Tesseract.recognize(
-                    file,
-                    'kor+eng',
-                    { 
-                        logger: m => console.log(m) // 진행 상황 콘솔 출력
-                    }
-                ).then(({ data: { text } }) => {
-                    loadingEl.style.display = "none";
-                    if (text && text.trim() !== "") {
-                        targetEl.value = "--- [카메라 인식 데이터] ---\n" + text.trim();
-                        alert("✨ 사진 속 글자 인식이 완료되었습니다!\n내용을 확인하고 저장해 주세요.");
-                    } else {
-                        alert("⚠️ 사진에서 인식된 글자가 없습니다. 다시 선명하게 촬영해 주세요.");
-                    }
-                }).catch(err => {
-                    loadingEl.style.display = "none";
-                    console.error(err);
-                    alert("❌ 글자 인식 중 오류가 발생했습니다. 다시 시도해 주세요.");
-                });
+        // 행사지시서 기반의 상세 일정을 완벽히 반영
+        let dailySchedules = {
+            "2026-09-17": "[1일차] ✈️ 공항 미팅 -> 가이드/현지가이드(Thiện) 미팅 -> 🏨 호텔 체크인 및 휴식 (노보텔 & 베스트웨스턴)",
+            "2026-09-18": "[2일차] 🏝️ 호핑투어 -> 혼똠섬 케이블카 & 워터파크 -> 🌉 키스브릿지(일몰 감상) -> 석식 및 옵션 투어 진행",
+            "2026-09-19": "[3일차] 🍜 중식(분짜+짜조) -> 🦁 빈사파리(VinWonders/Safari) 탐방 -> 🥩 석식(삼겹살) -> 옵션 및 휴식",
+            "2026-09-20": "[4일차] 🍲 중식(반쎄오) -> 🛍️ 쇼핑 3회 진행 -> 공항 이동 (ZE982 탑승 및 귀국)"
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            if(tabId === 'tab-settlement') {
+                calculate();
+            } else if(tabId === 'tab-schedule') {
+                renderScheduleCalendar();
+                renderDetailTimeline();
+                calculateAges();
             }
         }
 
-        function saveData() {
-            alert("💾 수정 사항이 성공적으로 저장 및 반영되었습니다!");
+        function getZodiac(year) {
+            const animals = [
+                { name: "원숭이띠", icon: "🐵" },
+                { name: "닭띠", icon: "🐔" },
+                { name: "개띠", icon: "🐶" },
+                { name: "돼지띠", icon: "🐷" },
+                { name: "쥐띠", icon: "🐭" },
+                { name: "소띠", icon: "🐮" },
+                { name: "호랑이띠", icon: "🐯" },
+                { name: "토끼띠", icon: "🐰" },
+                { name: "용띠", icon: "🐲" },
+                { name: "뱀띠", icon: "🐍" },
+                { name: "말띠", icon: "🐴" },
+                { name: "양띠", icon: "🐑" }
+            ];
+            return animals[year % 12];
         }
+
+        function loadTeamData(teamId) {
+            activeTeamId = teamId;
+            let team = teamsData.find(t => t.id === teamId);
+            if(!team) return;
+
+            document.getElementById('currentTeamTitle').innerText = `${team.code} (${team.startDate}~${team.endDate})`;
+            document.getElementById('teamCodeInput').value = team.code;
+            document.getElementById('teamStartDate').value = team.startDate;
+            document.getElementById('teamEndDate').value = team.endDate;
+            document.getElementById('guideOrderText').value = team.guideText;
+            document.getElementById('tourPax').value = team.pax;
+            document.getElementById('teamGuideIncome').value = team.income;
+
+            let tbody = document.getElementById('customerTableBody');
+            tbody.innerHTML = '';
+            team.customers.forEach((c, index) => {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="text" class="cust-en" value="${c.enName}" placeholder="영문 성함" style="margin-bottom: 3px; font-weight: bold;">
+                        <input type="text" class="cust-ko" value="${c.koName}" placeholder="한글 성함" style="color: #555;">
+                    </td>
+                    <td>
+                        <input type="text" class="cust-birth" value="${c.birth}" placeholder="1976-01-01" oninput="calculateAges()">
+                        <div class="age-display" id="age_${index}">나이: -세</div>
+                    </td>
+                    <td><input type="text" class="cust-phone" value="${c.phone}"></td>
+                    <td><input type="text" class="cust-req" value="${c.req}"></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            calculateAges();
+            renderScheduleCalendar();
+            renderDetailTimeline();
+            calculate();
+        }
+
+        function saveActiveTeamData() {
+            let team = teamsData.find(t => t.id === activeTeamId);
+            if(!team) return;
+
+            team.code = document.getElementById('teamCodeInput').value;
+            team.startDate = document.getElementById('teamStartDate').value;
+            team.endDate = document.getElementById('teamEndDate').value;
+            team.guideText = document.getElementById('guideOrderText').value;
+            team.pax = document.getElementById('tourPax').value;
+            team.income = parseFloat(document.getElementById('teamGuideIncome').value) || 0;
+
+            let customers = [];
+            const rows = document.querySelectorAll('#customerTableBody tr');
+            rows.forEach(row => {
+                let enInput = row.querySelector('.cust-en');
+                let koInput = row.querySelector('.cust-ko');
+                let birthInput = row.querySelector('.cust-birth');
+                let phoneInput = row.querySelector('.cust-phone');
+                let reqInput = row.querySelector('.cust-req');
+                
+                if(enInput && birthInput) {
+                    customers.push({
+                        enName: enInput.value,
+                        koName: koInput ? koInput.value : '',
+                        birth: birthInput.value,
+                        phone: phoneInput ? phoneInput.value : '',
+                        req: reqInput ? reqInput.value : ''
+                    });
+                }
+            });
+            team.customers = customers;
+            
+            document.getElementById('currentTeamTitle').innerText = `${team.code} (${team.startDate}~${team.endDate})`;
+            renderScheduleCalendar();
+            renderDetailTimeline();
+            alert("수정하신 내용이 안전하게 저장되었으며 캘린더 및 상세 일정에 반영되었습니다!");
+        }
+
+        function addNewTeam() {
+            let newId = teamsData.length > 0 ? Math.max(...teamsData.map(t => t.id)) + 1 : 1;
+            let newTeam = {
+                id: newId,
+                code: "TEAM" + newId,
+                startDate: "2026-09-22",
+                endDate: "2026-09-25",
+                guideText: "새로운 행사지시서 내용을 입력하세요.",
+                customers: [{ enName: "GUEST NAME", koName: "신규 고객", birth: "1990-01-01", phone: "00000000", req: "요청사항 입력" }],
+                pax: "2명",
+                income: 300
+            };
+            teamsData.push(newTeam);
+            loadTeamData(newId);
+            alert("새로운 행사가 등록되었습니다. 내용을 수정 후 [저장] 버튼을 누르세요!");
+        }
+
+        function calculateAges() {
+            const rows = document.querySelectorAll('#customerTableBody tr');
+            rows.forEach((row, index) => {
+                const textInput = row.querySelector('.cust-birth');
+                const displayDiv = row.querySelector('.age-display');
+                if (textInput && displayDiv) {
+                    const val = textInput.value.trim();
+                    const cleanVal = val.replace(/[^0-9]/g, '');
+                    const yearStr = cleanVal.substring(0, 4);
+                    
+                    if (yearStr.length === 4 && !isNaN(yearStr)) {
+                        const birthYear = parseInt(yearStr, 10);
+                        const currentYear = new Date().getFullYear();
+                        const age = currentYear - birthYear + 1;
+                        const zodiac = getZodiac(birthYear);
+                        displayDiv.innerText = `나이: ${age}세 (${zodiac.icon} ${zodiac.name})`;
+                    } else {
+                        displayDiv.innerText = `나이: -세`;
+                    }
+                }
+            });
+        }
+
+        function addNewCustomerRow() {
+            const tbody = document.getElementById('customerTableBody');
+            const rowCount = tbody.querySelectorAll('tr').length;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="text" class="cust-en" value="ENGLISH NAME" placeholder="영문 성함" style="margin-bottom: 3px; font-weight: bold;">
+                    <input type="text" class="cust-ko" value="한글 성함" placeholder="한글 성함" style="color: #555;">
+                </td>
+                <td>
+                    <input type="text" class="cust-birth" value="1990-01-01" placeholder="1990-01-01" oninput="calculateAges()">
+                    <div class="age-display" id="age_${rowCount}">나이: -세</div>
+                </td>
+                <td><input type="text" class="cust-phone" value="" placeholder="예약번호"></td>
+                <td><input type="text" class="cust-req" value="" placeholder="요청사항" style="width: 70%; display:inline;"><button class="btn-del" style="float:right; width:26%;" onclick="removeCustomerRow(this)">삭제</button></td>
+            `;
+            tbody.appendChild(row);
+            calculateAges();
+        }
+
+        function removeCustomerRow(btn) {
+            btn.closest('tr').remove();
+            calculateAges();
+        }
+
+        function renderScheduleCalendar() {
+            const grid = document.getElementById('scheduleCalendarGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            const daysName = ['일', '월', '화', '수', '목', '금', '토'];
+            daysName.forEach(day => {
+                let div = document.createElement('div');
+                div.className = 'calendar-day-name';
+                div.innerText = day;
+                grid.appendChild(div);
+            });
+
+            let firstDayIndex = 2; // 2026년 9월 1일 화요일
+            let totalDays = 30;
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                let emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-cell';
+                grid.appendChild(emptyCell);
+            }
+
+            for (let d = 1; d <= totalDays; d++) {
+                let cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                
+                let monthStr = "9".padStart(2, '0');
+                let dayStr = String(d).padStart(2, '0');
+                let dateKey = `2026-${monthStr}-${dayStr}`;
+
+                cell.onclick = (function(k) {
+                    return function(e) {
+                        openScheduleModal(k);
+                    };
+                })(dateKey);
+
+                let numDiv = document.createElement('div');
+                numDiv.className = 'day-number';
+                numDiv.innerText = d;
+                cell.appendChild(numDiv);
+
+                teamsData.forEach(team => {
+                    let currDate = new Date(dateKey);
+                    let sDate = new Date(team.startDate);
+                    let eDate = new Date(team.endDate);
+
+                    if (currDate >= sDate && currDate <= eDate) {
+                        let badge = document.createElement('div');
+                        badge.className = 'calendar-event-badge';
+                        if(team.id === activeTeamId) {
+                            badge.style.background = '#34a853';
+                        }
+                        badge.innerText = `🌴 ${team.code}`;
+                        cell.appendChild(badge);
+                    }
+                });
+
+                if (dailySchedules[dateKey]) {
+                    let item = document.createElement('div');
+                    item.className = 'calendar-schedule-item';
+                    item.innerText = dailySchedules[dateKey];
+                    cell.appendChild(item);
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function renderDetailTimeline() {
+            const container = document.getElementById('detailTimelineContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            let activeTeam = teamsData.find(t => t.id === activeTeamId);
+            if(!activeTeam) return;
+
+            let sDate = new Date(activeTeam.startDate);
+            let eDate = new Date(activeTeam.endDate);
+            
+            let curr = new Date(sDate);
+            let dayCount = 1;
+
+            while(curr <= eDate) {
+                let year = curr.getFullYear();
+                let month = String(curr.getMonth() + 1).padStart(2, '0');
+                let day = String(curr.getDate()).padStart ? String(curr.getDate()).padStart(2, '0') : String(curr.getDate()).padStart(2, '0');
+                let dateKey = `${year}-${month}-${day}`;
+                
+                let scheduleText = dailySchedules[dateKey] || '등록된 일정이 없습니다. (캘린더 날짜를 눌러 추가하세요)';
+
+                let card = document.createElement('div');
+                card.className = 'timeline-card';
+                card.innerHTML = `
+                    <div class="timeline-card-header">
+                        <span>🗓️ ${dayCount}일차 (${dateKey})</span>
+                        <button class="btn-add" style="width: auto; padding: 3px 8px; margin: 0; font-size: 11px;" onclick="openScheduleModal('${dateKey}')">편집</button>
+                    </div>
+                    <div class="timeline-card-content">
+                        ${scheduleText.replace(/\n/g, '<br>')}
+                    </div>
+                `;
+                container.appendChild(card);
+
+                curr.setDate(curr.getDate() + 1);
+                dayCount++;
+            }
+        }
+
+        function openScheduleModal(dateKey) {
+            selectedDateKeyForModal = dateKey;
+            document.getElementById('modalDateTitle').innerText = `${dateKey} 일정 관리`;
+            document.getElementById('modalScheduleInput').value = dailySchedules[dateKey] || '';
+            document.getElementById('scheduleModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('scheduleModal').style.display = 'none';
+        }
+
+        function saveDailySchedule() {
+            const val = document.getElementById('modalScheduleInput').value.trim();
+            if(val === "") {
+                delete dailySchedules[selectedDateKeyForModal];
+            } else {
+                dailySchedules[selectedDateKeyForModal] = val;
+            }
+            closeModal();
+            renderScheduleCalendar();
+            renderDetailTimeline();
+        }
+
+        function previewImage(event, previewId) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const output = document.getElementById(previewId);
+                if(output) {
+                    output.src = reader.result;
+                    output.style.display = 'block';
+                }
+            };
+            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function previewGuideOrderImage(event) {
+            previewImage(event, 'guideOrderImagePreview');
+        }
+
+        function previewCustomerImage(event) {
+            previewImage(event, 'customerImagePreview');
+        }
+
+        function addNewEmptyRow() {
+            const todayStr = '2026-09-17';
+            const tbody = document.getElementById('extraTableBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="date" value="${todayStr}" onchange="calculate()"></td>
+                <td><input type="text" value="" placeholder="내용 입력" oninput="calculate()"></td>
+                <td><input type="number" value="" placeholder="0" oninput="calculate()"></td>
+                <td style="text-align: center;"><button class="btn-del" onclick="removeRow(this)">삭제</button></td>
+            `;
+            tbody.appendChild(row);
+            calculate();
+        }
+
+        function removeRow(btn) {
+            btn.closest('tr').remove();
+            calculate();
+        }
+
+        function calculate() {
+            let teamIncome = parseFloat(document.getElementById('teamGuideIncome').value) || 0;
+            let extraTotal = 0;
+            
+            const rows = document.querySelectorAll('#extraTableBody tr');
+            rows.forEach(row => {
+                const amountInput = row.querySelectorAll('input')[2];
+                if(amountInput) extraTotal += parseFloat(amountInput.value) || 0;
+            });
+
+            let totalFinalIncome = teamIncome + extraTotal;
+
+            document.getElementById('resTeamIncome').innerText = teamIncome.toFixed(2);
+            document.getElementById('resExtraIncome').innerText = extraTotal.toFixed(2);
+            document.getElementById('resTotalFinalIncome').innerText = totalFinalIncome.toFixed(2);
+        }
+
+        window.onload = function() {
+            loadTeamData(1);
+        };
     </script>
 </body>
 </html>
