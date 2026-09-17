@@ -111,33 +111,6 @@
             font-weight: bold;
             margin-left: 5px;
         }
-        .checklist-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .checklist-box {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .checklist-box h4 {
-            margin: 0 0 8px 0;
-            font-size: 13px;
-            color: #1a73e8;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 4px;
-        }
-        .check-item {
-            display: flex;
-            align-items: center;
-            font-size: 12px;
-            margin-bottom: 5px;
-            gap: 6px;
-        }
         .calendar-container {
             margin-top: 15px;
             background: #121212;
@@ -181,6 +154,16 @@
             color: #888;
             font-size: 10px;
             margin-bottom: 2px;
+        }
+        .calendar-event-badge {
+            background: #1a73e8;
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            text-align: center;
         }
         .calendar-schedule-item {
             background: #262626;
@@ -268,34 +251,40 @@
 </head>
 <body>
 
-    <h1>🌴 푸꾸옥 가이드 수익 및 행사 관리</h1>
-    <p class="subtitle">정산 조건 직접 등록/삭제 관리 버전</p>
+    <h1>🌴 푸꾸옥 가이드 행사 및 일정 관리</h1>
+    <p class="subtitle">투어 코스 자유 편집 및 맞춤 일정 관리 버전</p>
 
     <!-- 행사 기간 선택 바 -->
     <div class="team-selector-bar">
         <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
-            <span>📅 행사 선택:</span>
-            <select id="teamSelectDropdown" onchange="onTeamSelectChange(this)" style="flex: 1; font-weight: bold; color: #1a73e8;"></select>
+            <span>📅 행사 기간 선택:</span>
+            <select id="teamSelectDropdown" onchange="onTeamSelectChange(this)" style="flex: 1; font-weight: bold; color: #1a73e8;">
+                <!-- 동적 생성 -->
+            </select>
         </div>
         <div style="display: flex; gap: 4px;">
-            <button class="btn-del" onclick="deleteActiveTeam()" title="삭제">🗑️ 삭제</button>
-            <button class="btn-main" style="background-color: #34a853;" onclick="openNewTeamModal()">＋ 새 행사</button>
+            <button class="btn-del" onclick="deleteActiveTeam()" title="현재 선택된 행사업무 삭제">🗑️ 삭제</button>
+            <button class="btn-main" style="background-color: #34a853;" onclick="addNewTeam()">＋ 새 행사업무 등록</button>
         </div>
     </div>
 
-    <!-- ✈️ 항공편 및 상세 정보 -->
+    <!-- 📋 행사지시서 상세 정보 조회 화면 -->
     <div class="section-title">
-        <span>✈️ 복수 항공편 및 기본 정보</span>
+        <span>📋 행사지시서 상세 정보</span>
         <button class="btn-main" onclick="openEditDirectiveModal()">📝 지시서 수정</button>
     </div>
     <table>
         <tr>
-            <th>항공편 정보 (입/출국)</th>
-            <td id="viewFlightInfo" style="line-height: 1.4;">-</td>
+            <th>투어 코드</th>
+            <td id="viewTourCode">-</td>
         </tr>
         <tr>
             <th>행사 일정 (기간)</th>
             <td id="viewDateRange" style="font-weight: bold; color: #1a73e8;">-</td>
+        </tr>
+        <tr>
+            <th>✈️ 항공편 및 미팅 정보</th>
+            <td id="viewFlightInfo" style="line-height: 1.4;">-</td>
         </tr>
         <tr>
             <th>가이드 정보 (한/베)</th>
@@ -310,38 +299,32 @@
             <td id="viewHotelInfo" style="line-height: 1.4;">-</td>
         </tr>
         <tr>
-            <th>정산 조건 & 기가팁</th>
-            <td id="viewSettlementAndTip">-</td>
+            <th>정산 조건</th>
+            <td id="viewSettlementCond">-</td>
+        </tr>
+        <tr>
+            <th>기가팁 금액</th>
+            <td id="viewGigaTip">-</td>
         </tr>
     </table>
 
-    <!-- 체크리스트 확인사항 영역 -->
-    <div class="checklist-grid">
-        <div class="checklist-box">
-            <h4>📦 포함사항 체크</h4>
-            <div id="viewIncludedList"></div>
-        </div>
-        <div class="checklist-box">
-            <h4>📝 센딩 필수사항 체크</h4>
-            <div id="viewSendingList"></div>
-        </div>
-    </div>
-
-    <!-- 👥 고객 명단 및 특이사항 관리 -->
+    <!-- 👥 고객 명단 및 요청사항 관리 -->
     <div class="section-title">
-        <span>👥 고객 명단 및 특이사항 (알레르기/요청)</span>
+        <span>👥 고객 명단 및 요청사항</span>
         <button class="btn-main" onclick="openEditDirectiveModal()">＋ 고객 편집</button>
     </div>
     <table>
         <thead>
             <tr>
-                <th style="width: 32%;">고객 성함 (영문 / 한글)</th>
+                <th style="width: 35%;">고객 성함 (영문 / 한글)</th>
                 <th style="width: 25%;">생년월일 / 나이</th>
                 <th style="width: 15%;">예약번호</th>
-                <th style="width: 28%;">특이사항 / 알레르기</th>
+                <th style="width: 25%;">요청사항</th>
             </tr>
         </thead>
-        <tbody id="viewCustomerTableBody"></tbody>
+        <tbody id="viewCustomerTableBody">
+            <!-- 자바스크립트 동적 렌더링 -->
+        </tbody>
     </table>
 
     <!-- 📌 선택된 날짜 기간별 투어 일정 정리 -->
@@ -359,91 +342,91 @@
         <div class="calendar-grid" id="scheduleCalendarGrid"></div>
     </div>
 
-    <!-- 📝 통합 수정/생성 모달창 -->
+    <!-- 📝 행사지시서 및 고객 입력/수정 모달창 -->
     <div id="directiveModal" class="modal">
         <div class="modal-content">
-            <h3 id="directiveModalTitle">📝 행사 상세 정보 편집</h3>
+            <h3 id="directiveModalTitle">📝 행사 기간 및 가이드 상세 편집</h3>
             
-            <!-- 항공편 다중 입력 영역 -->
-            <div style="margin-bottom: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                    <span style="font-size: 11px; font-weight: bold; color: #1a73e8;">✈️ 항공편 관리 (비행기별 미팅 인원 입력)</span>
-                    <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addFlightRow()">＋항공편추가</button>
-                </div>
-                <div id="modalFlightListContainer" style="display: flex; flex-direction: column; gap: 4px;"></div>
-            </div>
+            <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">투어 코드</label>
+            <input type="text" id="inputTourCode" style="margin-bottom: 8px;">
 
             <div style="display: flex; gap: 5px; margin-bottom: 8px;">
                 <div style="flex:1;">
-                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">시작일</label>
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">시작일 (기간 시작)</label>
                     <input type="date" id="inputStartDate">
                 </div>
                 <div style="flex:1;">
-                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">종료일</label>
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">종료일 (기간 종료)</label>
                     <input type="date" id="inputEndDate">
                 </div>
             </div>
 
+            <!-- ✈️ 항공편 및 미팅 인원 입력 섹션 추가 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 4px;">
+                <button type="button" class="btn-main" style="padding: 3px 8px; font-size: 11px; background-color: #34a853;" onclick="addFlightRow()">＋ 항공편행 추가</button>
+                <span style="font-size: 11px; font-weight: bold; color: #1a73e8;">✈️ 항공편 및 미팅 인원 입력</span>
+            </div>
+            <div id="modalFlightListContainer" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;"></div>
+
+            <div style="display: flex; gap: 5px; margin-bottom: 4px;">
+                <div style="flex:1;">
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">성인 인원</label>
+                    <select id="modalAdultCount" onchange="onModalAdultChildChange()"></select>
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">소아 인원</label>
+                    <select id="modalChildCount" onchange="onModalAdultChildChange()"></select>
+                </div>
+            </div>
+            <div id="modalTotalGuestsText" style="font-size: 11px; color: #666; margin-bottom: 8px; font-weight: bold;">총 인원: 성인 4명, 소아 2명 (총 6명)</div>
+
             <div style="display: flex; gap: 5px; margin-bottom: 8px;">
                 <div style="flex:1;">
-                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">🇰🇷 한국 가이드</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                        <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">🇰🇷 한국 가이드</label>
+                        <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addNewOptionItem('koreaGuide')">＋추가</button>
+                    </div>
                     <select id="selectKoreaGuide"></select>
                 </div>
                 <div style="flex:1;">
-                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">🇻🇳 베트남 가이드 (직접 입력)</label>
-                    <input type="text" id="inputVietnamGuide" placeholder="예: Thiện (-0378461735)" style="font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                        <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">🇻🇳 베트남 가이드</label>
+                        <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addNewOptionItem('vietnamGuide')">＋추가</button>
+                    </div>
+                    <select id="selectVietnamGuide"></select>
                 </div>
             </div>
 
-            <div style="margin-bottom: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                    <span style="font-size: 11px; font-weight: bold; color: #1a73e8;">🏨 호텔 및 룸타입 정보</span>
-                    <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addHotelRow()">＋호텔추가</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 4px;">
+                <button type="button" class="btn-main" style="padding: 3px 8px; font-size: 11px; background-color: #34a853;" onclick="addHotelRow()">＋ 호텔행 추가</button>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #f29900;" onclick="addNewHotelOption()">＋새 호텔등록</button>
+                    <span style="font-size: 11px; font-weight: bold; color: #1a73e8;">🏨 호텔 및 룸타입 선택</span>
                 </div>
-                <div id="modalHotelListContainer" style="display: flex; flex-direction: column; gap: 4px;"></div>
             </div>
+            <div id="modalHotelListContainer" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;"></div>
 
-            <!-- 포함사항 및 센딩 체크항목 설정 -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; background: #f8f9fa; padding: 8px; border-radius: 4px;">
-                <div>
-                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">📦 포함사항 (쉼표로 구분)</label>
-                    <input type="text" id="inputIncludedItems" placeholder="혼똠섬, 사파리, 마사지 90분" style="font-size: 11px;">
-                </div>
-                <div>
-                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">📝 센딩 필수사항 (쉼표 구분)</label>
-                    <input type="text" id="inputSendingItems" placeholder="일정변경 동의서, 안전수칙 동의서" style="font-size: 11px;">
-                </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">정산 조건</label>
+                <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addNewOptionItem('settlement')">＋정산조건 등록</button>
             </div>
-
-            <!-- 정산 조건 관리 영역 (등록/삭제 가능) -->
-            <div style="margin-bottom: 8px; background: #f8f9fa; padding: 8px; border-radius: 4px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">💰 정산 조건 선택 및 관리</label>
-                    <button type="button" class="btn-main" style="padding: 1px 4px; font-size: 9px; background-color: #34a853;" onclick="addSettlementOption()">＋조건추가</button>
-                </div>
-                <div style="display: flex; gap: 5px; margin-bottom: 4px;">
-                    <select id="selectSettlementCond" style="flex: 2;"></select>
-                    <button type="button" class="btn-del" style="padding: 2px 6px; font-size: 11px;" onclick="deleteSelectedSettlement()">선택삭제</button>
-                </div>
-                <div id="newSettlementAddArea" style="display: none; gap: 4px; margin-top: 4px;">
-                    <input type="text" id="inputNewSettlementText" placeholder="새로운 정산 조건 입력" style="font-size: 11px; flex: 1;">
-                    <button type="button" class="btn-main" style="padding: 2px 8px; font-size: 11px;" onclick="saveNewSettlementOption()">저장</button>
-                </div>
-            </div>
+            <select id="selectSettlementCond" style="margin-bottom: 8px;"></select>
 
             <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">기가팁 금액</label>
-            <div style="margin-bottom: 8px;">
-                <input type="text" id="inputGigaTip" placeholder="팁 금액 ($50 × 5명 = $250)" value="$50">
+            <div style="display: flex; gap: 5px; align-items: center; margin-bottom: 4px;">
+                <span style="font-weight: bold; color: #333;">$</span>
+                <input type="text" id="inputGigaTip" placeholder="50" oninput="updateGigaTipPreview()" style="flex: 1;">
             </div>
+            <div id="gigaTipPreviewText" style="font-size: 11px; color: #1a73e8; margin-bottom: 12px; font-weight: bold;">연동 결과: -</div>
 
-            <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">고객 명단 및 알레르기/특이사항 관리</label>
+            <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">고객 명단 관리 (한글 입력 시 영문 자동변환)</label>
             <table style="margin-bottom: 8px;">
                 <thead>
                     <tr>
                         <th style="font-size:10px; padding:4px;">성함 (영문 / 한글)</th>
                         <th style="font-size:10px; padding:4px;">생년월일</th>
                         <th style="font-size:10px; padding:4px;">예약번호</th>
-                        <th style="font-size:10px; padding:4px;">특이사항/알레르기</th>
+                        <th style="font-size:10px; padding:4px;">요청사항 / 삭제</th>
                     </tr>
                 </thead>
                 <tbody id="modalCustomerTableBody"></tbody>
@@ -457,72 +440,142 @@
         </div>
     </div>
 
-    <!-- 🗺️ 투어 코스 선택 모달창 -->
+    <!-- 🗺️ 푸꾸옥 투어 코스 선택 및 관리 모달창 -->
     <div id="schedulePresetModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 8px;">✨ 자주 쓰는 투어 코스 선택</h3>
-            <div id="presetListContainer"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h3 style="margin: 0;">✨ 자주 쓰는 투어 코스 선택</h3>
+                <button class="btn-main" style="background-color: #34a853; padding: 4px 8px; font-size: 11px;" onclick="openPresetManageModal()">⚙️ 코스 항목 관리</button>
+            </div>
+            <p style="font-size: 11px; color: #666; margin-bottom: 10px;">선택하시면 해당 날짜 일정에 내용이 바로 입력됩니다.</p>
+            <div id="presetListContainer">
+                <!-- 동적 렌더링 -->
+            </div>
             <button class="btn-del" style="width: 100%; padding: 8px; margin-top: 10px;" onclick="closePresetModal()">닫기</button>
+        </div>
+    </div>
+
+    <!-- ⚙️ 투어 코스 항목 편집(추가/삭제) 모달창 -->
+    <div id="presetManageModal" class="modal">
+        <div class="modal-content">
+            <h3>⚙️ 투어 코스 템플릿 관리</h3>
+            <p style="font-size: 11px; color: #666; margin-bottom: 10px;">자주 쓰는 코스 문구를 추가하거나 삭제할 수 있습니다.</p>
+            
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <input type="text" id="newPresetInput" placeholder="예: [선셋 투어] 🌅 디너 크루즈 탑승 -> 선셋 감상" style="flex: 1;">
+                <button class="btn-main" style="background-color: #34a853;" onclick="addTourPresetItem()">추가</button>
+            </div>
+
+            <div id="presetManageListContainer" style="display: flex; flex-direction: column; gap: 6px; max-height: 250px; overflow-y: auto; margin-bottom: 10px;">
+                <!-- 동적 렌더링 -->
+            </div>
+
+            <button class="btn-main" style="width: 100%; padding: 8px;" onclick="closePresetManageModal()">완료 (돌아가기)</button>
         </div>
     </div>
 
     <script>
         let dropdownOptions = {
             koreaGuide: JSON.parse(localStorage.getItem('koreaGuideOptions')) || ["박재우", "김가이드", "이한국"],
-            hotelList: JSON.parse(localStorage.getItem('hotelListOptions')) || ["노보텔 (Novotel Phu Quoc)", "JW 메리어트", "인터컨티넨탈"],
-            settlement: JSON.parse(localStorage.getItem('settlementOptions')) || ["메꾸기 1인 $80 / 회사 5:5", "노옵션 / 노쇼핑 / 단독 행사"]
+            vietnamGuide: JSON.parse(localStorage.getItem('vietnamGuideOptions')) || ["Thiện (-0378461735)", "Nam (-0901234567)", "Huy (-0912345678)"],
+            hotelList: JSON.parse(localStorage.getItem('hotelListOptions')) || [
+                "JW Marriott Phu Quoc Emerald Bay Resort & Spa", "InterContinental Phu Quoc Long Beach Resort",
+                "Regent Phu Quoc", "New World Phu Quoc Resort", "Premier Village Phu Quoc Resort",
+                "Salinda Resort Phu Quoc Island", "Novotel Phu Quoc Resort", "Pullman Phu Quoc Beach Resort"
+            ],
+            roomTypes: JSON.parse(localStorage.getItem('roomTypesOptions')) || [
+                "Superior Twin", "Superior Double", "Deluxe Twin", "Deluxe Double", "Executive Suite", "1 Bedroom Pool Villa"
+            ],
+            settlement: JSON.parse(localStorage.getItem('settlementOptions')) || [
+                "메꾸기 1인 $80 / 회사 5:5 / 옵션가능 / 쇼핑 3회",
+                "노옵션 / 노쇼핑 / 단독 행사",
+                "회사 6:4 / 옵션가능 / 쇼핑 2회"
+            ]
         };
 
         let tourPresets = JSON.parse(localStorage.getItem('tourPresetsOptions')) || [
-            "[공항 미팅] ✈️ 공항 픽업 -> 가이드 미팅 -> 🏨 호텔 체크인",
-            "[남섬 투어] 🏝️ 호핑투어 -> 혼똠섬 케이블카 -> 🌉 키스브릿지",
-            "[북섬 투어] 🦁 빈사파리 탐방 -> 🏰 빈원더스 -> 🌙 그랜드월드",
-            "[시내 투어] 🛕 호국사 -> 🏖️ 사오비치 -> 🦞 해산물 중식 및 마사지",
-            "[공항 샌딩] 킹콩마트 쇼핑 -> 공항 이동 (귀국)"
+            "[공항 미팅] ✈️ 공항 픽업 -> 가이드 미팅 -> 🏨 호텔 체크인 및 휴식",
+            "[남섬 투어] 🏝️ 호핑투어 -> 혼똠섬 케이블카 & 워터파크 -> 🌉 키스브릿지",
+            "[북섬 투-어] 🦁 빈사파리 탐방 -> 🏰 빈원더스 테마파크 -> 🌙 그랜드월드 야간 투어",
+            "[시내/사루 투어] 🛕 호국사 방문 -> 🏖️ 사오비치 해변 -> 🦞 현지 해산물 중식 및 마사지",
+            "[공항 샌딩] 🍲 중식 및 기념품 쇼핑 -> 🛍️ 마트 장보기 -> 공항 이동 (귀국)"
         ];
 
         let teamsData = JSON.parse(localStorage.getItem('teamsData')) || [
             {
-                id: 1,
-                flights: [
-                    { type: "인천➔푸꾸옥", name: "VJ969", time: "11:10", pax: "3명" },
-                    { type: "인천➔푸꾸옥", name: "VJ970", time: "15:20", pax: "2명" },
-                    { type: "푸꾸옥➔인천", name: "VJ968", time: "23:10", pax: "5명" }
-                ],
+                id: 11,
+                tourCode: "TEAM11",
                 startDate: "2026-09-22",
                 endDate: "2026-09-25",
+                flights: [{ flightNo: "VJ974", time: "08:00 도착", paxCount: "6" }],
                 koreaGuide: "박재우",
                 vietnamGuide: "Thiện (-0378461735)",
-                hotels: [{ name: "NOVOTEL", roomType: "Superior Twin * 3", count: "3" }],
-                includedItems: [],
-                sendingItems: [],
-                settlementCond: "메꾸기 1인 $80 / 회사 5:5",
-                gigaTip: "$50 × 5명 = $250",
-                customers: [{ enName: "GUEST/NAME", koName: "고객명", birth: "1990-01-01", phone: "000000", req: "없음" }]
+                paxInfo: "성인 4명, 소아 2명 (총 6명)",
+                hotels: [{ name: "Novotel Phu Quoc Resort", roomType: "Superior Twin", count: "2" }],
+                settlementCond: "메꾸기 1인 $80 / 회사 5:5 / 옵션가능 / 쇼핑 3회",
+                gigaTip: "$50 × 6명 = $300",
+                customers: [{ enName: "HONG/GILDONG", koName: "홍길동", birth: "1990-01-01", phone: "000000", req: "없음" }]
             }
         ];
 
-        let activeTeamId = teamsData[0].id;
-        let isCreatingNew = false;
+        let activeTeamId = teamsData.length > 0 ? teamsData[0].id : 11;
+        let isCreatingNewTeam = false;
         let targetPresetDateKey = null;
+
         let dailySchedules = JSON.parse(localStorage.getItem('dailySchedules')) || {};
 
         function saveAllToLocalStorage() {
             localStorage.setItem('teamsData', JSON.stringify(teamsData));
             localStorage.setItem('dailySchedules', JSON.stringify(dailySchedules));
             localStorage.setItem('tourPresetsOptions', JSON.stringify(tourPresets));
-            localStorage.setItem('settlementOptions', JSON.stringify(dropdownOptions.settlement));
             localStorage.setItem('koreaGuideOptions', JSON.stringify(dropdownOptions.koreaGuide));
+            localStorage.setItem('vietnamGuideOptions', JSON.stringify(dropdownOptions.vietnamGuide));
+            localStorage.setItem('hotelListOptions', JSON.stringify(dropdownOptions.hotelList));
+            localStorage.setItem('roomTypesOptions', JSON.stringify(dropdownOptions.roomTypes));
+            localStorage.setItem('settlementOptions', JSON.stringify(dropdownOptions.settlement));
+        }
+
+        function getZodiac(year) {
+            const animals = [
+                { name: "원숭이띠", icon: "🐵" }, { name: "닭띠", icon: "🐔" },
+                { name: "개띠", icon: "🐶" }, { name: "돼지띠", icon: "🐷" },
+                { name: "쥐띠", icon: "🐭" }, { name: "소띠", icon: "🐮" },
+                { name: "호랑이띠", icon: "🐯" }, { name: "토끼띠", icon: "🐰" },
+                { name: "용띠", icon: "🐲" }, { name: "뱀띠", icon: "🐍" },
+                { name: "말띠", icon: "🐴" }, { name: "양띠", icon: "🐑" }
+            ];
+            return animals[year % 12];
         }
 
         function calculateAgeNum(birthStr) {
             if(!birthStr) return "-세";
-            const yearStr = birthStr.replace(/[^0-9]/g, '').substring(0, 4);
-            if (yearStr.length === 4) {
-                const age = new Date().getFullYear() - parseInt(yearStr, 10) + 1;
-                return `${age}세`;
+            const cleanVal = birthStr.replace(/[^0-9]/g, '');
+            const yearStr = cleanVal.substring(0, 4);
+            if (yearStr.length === 4 && !isNaN(yearStr)) {
+                const birthYear = parseInt(yearStr, 10);
+                const currentYear = new Date().getFullYear();
+                const age = currentYear - birthYear + 1;
+                const zodiac = getZodiac(birthYear);
+                return `${age}세 (${zodiac.icon} ${zodiac.name})`;
             }
             return "-세";
+        }
+
+        function convertKoToEnName(koName) {
+            if (!koName || !koName.trim()) return "";
+            let cleaned = koName.trim().replace(/\s+/g, '');
+            if (cleaned.length < 2) return cleaned.toUpperCase();
+            const firstLetterMap = { '김': 'KIM', '이': 'LEE', '박': 'PARK', '최': 'CHOI', '정': 'JUNG', '강': 'KANG', '조': 'CHO', '윤': 'YOON', '장': 'JANG', '임': 'LIM', '한': 'HAN', '오': 'OH', '서': 'SEO', '신': 'SHIN', '홍': 'HONG' };
+            const syllableMap = { '가': 'KA', '나': 'NA', '다': 'DA', '라': 'RA', '마': 'MA', '바': 'BA', '사': 'SA', '아': 'A', '자': 'JA', '차': 'CHA', '카': 'KA', '타': 'TA', '파': 'PA', '하': 'HA', '길': 'GIL', '동': 'DONG', '민': 'MIN', '영': 'YEONG', '수': 'SU' };
+            let firstChar = cleaned.charAt(0);
+            let lastName = firstLetterMap[firstChar] || "KIM";
+            let restChars = cleaned.substring(1);
+            let firstNames = [];
+            for (let i = 0; i < restChars.length; i++) {
+                let ch = restChars.charAt(i);
+                firstNames.push(syllableMap[ch] || ch);
+            }
+            return `${lastName}/${firstNames.join('')}`;
         }
 
         function updateTeamDropdown() {
@@ -532,7 +585,7 @@
             teamsData.forEach(t => {
                 let opt = document.createElement('option');
                 opt.value = t.id;
-                opt.innerText = `기간: ${t.startDate} ~ ${t.endDate} (총 인원: ${t.customers.length}명)`;
+                opt.innerText = `📅 기간: ${t.startDate} ~ ${t.endDate} [코드: ${t.tourCode}]`;
                 if(t.id === activeTeamId) opt.selected = true;
                 select.appendChild(opt);
             });
@@ -548,104 +601,294 @@
             if(!team) return;
 
             updateTeamDropdown();
-            
-            let flightHtml = (team.flights || []).map(f => `✈️ [${f.type}] <strong>${f.name}</strong> (${f.time}) <span style="background:#e8f0fe; color:#1a73e8; padding:1px 5px; border-radius:3px; font-weight:bold; font-size:11px;">미팅인원: ${f.pax || '0명'}</span>`).join('<br>');
-            document.getElementById('viewFlightInfo').innerHTML = flightHtml || "-";
+            if(!team.koreaGuide) team.koreaGuide = "박재우";
+            if(!team.hotels) team.hotels = [];
+            if(!team.flights) team.flights = [];
 
+            document.getElementById('viewTourCode').innerText = team.tourCode || "-";
             document.getElementById('viewDateRange').innerText = `${team.startDate || ""} ~ ${team.endDate || ""}`;
-            document.getElementById('viewGuideInfo').innerText = `🇰🇷 ${team.koreaGuide} / 🇻🇳 ${team.vietnamGuide || "-"}`;
-            document.getElementById('viewPaxInfo').innerText = `성인/소아 총 ${team.customers.length}명`;
             
-            let hotelHtml = (team.hotels || []).map(h => `🏨 <strong>${h.name}</strong><br>└ 🛏️ ${h.roomType} (${h.count}객실)`).join('<br>');
-            document.getElementById('viewHotelInfo').innerHTML = hotelHtml || "-";
-            document.getElementById('viewSettlementAndTip').innerText = `${team.settlementCond || "-"} | 기가팁: ${team.gigaTip || "-"}`;
+            let flightDisplayHtml = team.flights.map(f => `✈️ <strong>${f.flightNo}</strong> (${f.time}) - 미팅인원: <strong>${f.paxCount}명</strong>`).join('<br>');
+            document.getElementById('viewFlightInfo').innerHTML = flightDisplayHtml || "-";
 
-            renderChecklistItems('viewIncludedList', team.includedItems || []);
-            renderChecklistItems('viewSendingList', team.sendingItems || []);
+            document.getElementById('viewGuideInfo').innerText = `🇰🇷 한국: ${team.koreaGuide} / 🇻🇳 베트남: ${team.vietnamGuide || "없음"}`;
+            document.getElementById('viewPaxInfo').innerText = team.paxInfo || "-";
+            
+            let hotelDisplayHtml = team.hotels.map(h => `🏨 <strong>${h.name}</strong><br>&nbsp;&nbsp;&nbsp;└ 🛏️ ${h.roomType} (${h.count}객실)`).join('<br>');
+            document.getElementById('viewHotelInfo').innerHTML = hotelDisplayHtml || "-";
+
+            document.getElementById('viewSettlementCond').innerText = team.settlementCond || "-";
+            document.getElementById('viewGigaTip').innerText = team.gigaTip || "-";
 
             renderViewCustomerTable(team.customers || []);
             renderDetailTimeline();
             renderScheduleCalendar();
         }
 
-        function renderChecklistItems(elementId, items) {
-            const container = document.getElementById(elementId);
-            if(!container) return;
-            container.innerHTML = '';
-            if(items.length === 0) {
-                container.innerHTML = '<span style="font-size:11px; color:#888;">등록된 항목 없음</span>';
-                return;
-            }
-            items.forEach(item => {
-                let div = document.createElement('div');
-                div.className = 'check-item';
-                div.innerHTML = `<input type="checkbox"> <span>${item}</span>`;
-                container.appendChild(div);
-            });
-        }
-
-        function renderViewCustomerTable(customers) {
+        function renderViewCustomerTable(customersArray) {
             let tbody = document.getElementById('viewCustomerTableBody');
             tbody.innerHTML = '';
-            customers.forEach(c => {
+            customersArray.forEach(c => {
                 let row = document.createElement('tr');
+                let ageInfo = calculateAgeNum(c.birth);
                 row.innerHTML = `
                     <td><strong>${c.enName}</strong><br><span style="color:#555;">${c.koName}</span></td>
-                    <td>${c.birth} <span class="age-badge">${calculateAgeNum(c.birth)}</span></td>
+                    <td>${c.birth} <span class="age-badge">${ageInfo}</span></td>
                     <td>${c.phone}</td>
-                    <td style="color: #d93025; font-weight: bold;">${c.req || '특이사항 없음'}</td>
+                    <td>${c.req}</td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        function openNewTeamModal() {
-            isCreatingNew = true;
-            document.getElementById('directiveModalTitle').innerText = '✨ 새 행사 추가하기';
+        function populateDropdowns(selectedKoreaGuide, selectedVietnamGuide, selectedSettlement) {
+            const koreaSel = document.getElementById('selectKoreaGuide');
+            const vietnamSel = document.getElementById('selectVietnamGuide');
+            const settSel = document.getElementById('selectSettlementCond');
+
+            koreaSel.innerHTML = '';
+            dropdownOptions.koreaGuide.forEach(item => {
+                let opt = document.createElement('option');
+                opt.value = item;
+                opt.innerText = item;
+                if(item === selectedKoreaGuide) opt.selected = true;
+                koreaSel.appendChild(opt);
+            });
+
+            vietnamSel.innerHTML = '';
+            dropdownOptions.vietnamGuide.forEach(item => {
+                let opt = document.createElement('option');
+                opt.value = item;
+                opt.innerText = item;
+                if(item === selectedVietnamGuide) opt.selected = true;
+                vietnamSel.appendChild(opt);
+            });
+
+            settSel.innerHTML = '';
+            dropdownOptions.settlement.forEach(item => {
+                let opt = document.createElement('option');
+                opt.value = item;
+                opt.innerText = item;
+                if(item === selectedSettlement) opt.selected = true;
+                settSel.appendChild(opt);
+            });
+        }
+
+        function initModalAdultChildDropdowns(currentAdult = 4, currentChild = 2) {
+            const adultSel = document.getElementById('modalAdultCount');
+            const childSel = document.getElementById('modalChildCount');
+            adultSel.innerHTML = '';
+            childSel.innerHTML = '';
+            for (let i = 0; i <= 30; i++) {
+                let optA = document.createElement('option');
+                optA.value = i;
+                optA.textContent = `성인 ${i}명`;
+                if(i === currentAdult) optA.selected = true;
+                adultSel.appendChild(optA);
+
+                let optC = document.createElement('option');
+                optC.value = i;
+                optC.textContent = `소아 ${i}명`;
+                if(i === currentChild) optC.selected = true;
+                childSel.appendChild(optC);
+            }
+            updateModalTotalGuestsText();
+        }
+
+        function onModalAdultChildChange() {
+            updateModalTotalGuestsText();
+            updateGigaTipPreview();
+        }
+
+        function updateModalTotalGuestsText() {
+            const adult = document.getElementById('modalAdultCount').value;
+            const child = document.getElementById('modalChildCount').value;
+            const total = parseInt(adult, 10) + parseInt(child, 10);
+            document.getElementById('modalTotalGuestsText').innerText = `총 인원: 성인 ${adult}명, 소아 ${child}명 (총 ${total}명)`;
+        }
+
+        function updateGigaTipPreview() {
+            const adult = parseInt(document.getElementById('modalAdultCount').value, 10) || 0;
+            const child = parseInt(document.getElementById('modalChildCount').value, 10) || 0;
+            const totalPax = adult + child;
+            let rawVal = document.getElementById('inputGigaTip').value.trim().replace(/[^0-9]/g, '');
+            if (rawVal !== "") {
+                let price = parseInt(rawVal, 10);
+                document.getElementById('gigaTipPreviewText').innerText = `연동 결과: $${price} × ${totalPax}명 = $${price * totalPax}`;
+            } else {
+                document.getElementById('gigaTipPreviewText').innerText = `연동 결과: -`;
+            }
+        }
+
+        function parsePaxStringToNumbers(paxStr) {
+            let adult = 4, child = 2;
+            if(!paxStr) return { adult, child };
+            let matchA = paxStr.match(/성인\s*(\d+)명/);
+            let matchC = paxStr.match(/소아\s*(\d+)명/);
+            if(matchA) adult = parseInt(matchA[1], 10);
+            if(matchC) child = parseInt(matchC[1], 10);
+            return { adult, child };
+        }
+
+        // 항공편 행 추가 함수
+        function renderModalFlightRows(flightsArray) {
+            const container = document.getElementById('modalFlightListContainer');
+            container.innerHTML = '';
+            if(!flightsArray || flightsArray.length === 0) {
+                flightsArray = [{ flightNo: 'VJ974', time: '08:00 도착', paxCount: '6' }];
+            }
+            flightsArray.forEach((f) => {
+                appendFlightRowElement(f.flightNo || '', f.time || '', f.paxCount || '6');
+            });
+        }
+
+        function appendFlightRowElement(flightNo = '', time = '', paxCount = '6') {
+            const container = document.getElementById('modalFlightListContainer');
+            let row = document.createElement('div');
+            row.style.cssText = "display: flex; gap: 4px; align-items: center; background: #f8f9fa; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 4px;";
             
-            renderModalFlightRows([
-                { type: "인천➔푸꾸옥", name: "VJ969", time: "11:10", pax: "3명" },
-                { type: "푸꾸옥➔인천", name: "VJ968", time: "23:10", pax: "3명" }
-            ]);
+            let noInput = document.createElement('input');
+            noInput.type = 'text';
+            noInput.className = 'modal-flight-no';
+            noInput.value = flightNo;
+            noInput.placeholder = '편명 (예: VJ974)';
+            noInput.style.flex = '1.2';
 
-            document.getElementById('inputStartDate').value = "2026-09-22";
-            document.getElementById('inputEndDate').value = "2026-09-25";
-            document.getElementById('inputVietnamGuide').value = "Thiện (-0378461735)";
-            document.getElementById('inputIncludedItems').value = "";
-            document.getElementById('inputSendingItems').value = "";
-            document.getElementById('inputGigaTip').value = "$50 × 1명 = $50";
+            let timeInput = document.createElement('input');
+            timeInput.type = 'text';
+            timeInput.value = time;
+            timeInput.className = 'modal-flight-time';
+            timeInput.placeholder = '시간 (예: 08:00 도착)';
+            timeInput.style.flex = '1.5';
 
-            populateSelectOptions('selectKoreaGuide', dropdownOptions.koreaGuide, "박재우");
-            populateSelectOptions('selectSettlementCond', dropdownOptions.settlement, dropdownOptions.settlement[0]);
-            document.getElementById('newSettlementAddArea').style.display = 'none';
+            let countInput = document.createElement('input');
+            countInput.type = 'text';
+            countInput.className = 'modal-flight-pax';
+            countInput.value = paxCount;
+            countInput.placeholder = '인원';
+            countInput.style.cssText = 'width: 50px; text-align: center;';
 
-            renderModalHotelRows([{name: "NOVOTEL", roomType: "Superior Twin", count: "3"}]);
-            renderModalCustomerTable([{enName: "GUEST/NAME", koName: "고객명", birth: "1990-01-01", phone: "000000", req: "없음"}]);
+            let delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'btn-del';
+            delBtn.innerText = '삭제';
+            delBtn.onclick = function() { row.remove(); };
 
-            document.getElementById('directiveModal').style.display = 'flex';
+            row.appendChild(noInput);
+            row.appendChild(timeInput);
+            row.appendChild(countInput);
+            row.appendChild(delBtn);
+            container.appendChild(row);
+        }
+
+        function addFlightRow() {
+            appendFlightRowElement('', '', '');
+        }
+
+        function renderModalHotelRows(hotelsArray) {
+            const container = document.getElementById('modalHotelListContainer');
+            container.innerHTML = '';
+            if(!hotelsArray || hotelsArray.length === 0) {
+                hotelsArray = [{ name: dropdownOptions.hotelList[0], roomType: dropdownOptions.roomTypes[0], count: "1" }];
+            }
+            hotelsArray.forEach((h) => {
+                appendHotelRowElement(h.name || '', h.roomType || '', h.count || '1');
+            });
+        }
+
+        function appendHotelRowElement(hotelName = '', roomType = '', count = '1') {
+            const container = document.getElementById('modalHotelListContainer');
+            let row = document.createElement('div');
+            row.style.cssText = "display: flex; gap: 4px; align-items: center; background: #f8f9fa; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 4px;";
+            
+            let hotelSelect = document.createElement('select');
+            hotelSelect.className = 'modal-hotel-name';
+            hotelSelect.style.flex = '1.3';
+            dropdownOptions.hotelList.forEach(hn => {
+                let opt = document.createElement('option');
+                opt.value = hn;
+                opt.innerText = hn;
+                if(hn === hotelName) opt.selected = true;
+                hotelSelect.appendChild(opt);
+            });
+
+            let roomSelect = document.createElement('select');
+            roomSelect.className = 'modal-hotel-room';
+            roomSelect.style.flex = '1.3';
+            dropdownOptions.roomTypes.forEach(rt => {
+                let opt = document.createElement('option');
+                opt.value = rt;
+                opt.innerText = rt;
+                if(rt === roomType) opt.selected = true;
+                roomSelect.appendChild(opt);
+            });
+
+            let countInput = document.createElement('input');
+            countInput.type = 'text';
+            countInput.className = 'modal-hotel-count';
+            countInput.value = count;
+            countInput.style.cssText = 'width: 45px; text-align: center;';
+
+            let delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'btn-del';
+            delBtn.innerText = '삭제';
+            delBtn.onclick = function() { row.remove(); };
+
+            row.appendChild(hotelSelect);
+            row.appendChild(roomSelect);
+            row.appendChild(countInput);
+            row.appendChild(delBtn);
+            container.appendChild(row);
+        }
+
+        function addHotelRow() {
+            appendHotelRowElement(dropdownOptions.hotelList[0] || '', dropdownOptions.roomTypes[0] || '', '1');
+        }
+
+        function addNewHotelOption() {
+            let inputVal = prompt("새로운 호텔/리조트 이름을 입력하세요:");
+            if(inputVal && inputVal.trim() !== "") {
+                dropdownOptions.hotelList.push(inputVal.trim());
+                saveAllToLocalStorage();
+                alert("호텔이 추가되었습니다!");
+            }
+        }
+
+        function addNewOptionItem(type) {
+            let inputVal = prompt("새로운 항목 내용을 입력하세요:");
+            if(inputVal && inputVal.trim() !== "") {
+                dropdownOptions[type].push(inputVal.trim());
+                saveAllToLocalStorage();
+                populateDropdowns(
+                    document.getElementById('selectKoreaGuide').value,
+                    document.getElementById('selectVietnamGuide').value,
+                    document.getElementById('selectSettlementCond').value
+                );
+                alert("등록되었습니다!");
+            }
         }
 
         function openEditDirectiveModal() {
-            isCreatingNew = false;
-            document.getElementById('directiveModalTitle').innerText = '📝 행사 상세 정보 편집';
+            isCreatingNewTeam = false;
+            document.getElementById('directiveModalTitle').innerText = '📝 행사 기간 및 가이드 상세 편집';
             let team = teamsData.find(t => t.id === activeTeamId);
             if(!team) return;
 
-            renderModalFlightRows(team.flights || []);
-
+            document.getElementById('inputTourCode').value = team.tourCode || "";
             document.getElementById('inputStartDate').value = team.startDate || "";
             document.getElementById('inputEndDate').value = team.endDate || "";
-            document.getElementById('inputVietnamGuide').value = team.vietnamGuide || "";
-            document.getElementById('inputIncludedItems').value = (team.includedItems || []).join(', ');
-            document.getElementById('inputSendingItems').value = (team.sendingItems || []).join(', ');
-            document.getElementById('inputGigaTip').value = team.gigaTip || "$50";
+            
+            let tipNumMatch = (team.gigaTip || "").match(/\d+/);
+            document.getElementById('inputGigaTip').value = tipNumMatch ? tipNumMatch[0] : "50";
 
-            populateSelectOptions('selectKoreaGuide', dropdownOptions.koreaGuide, team.koreaGuide);
-            populateSelectOptions('selectSettlementCond', dropdownOptions.settlement, team.settlementCond);
-            document.getElementById('newSettlementAddArea').style.display = 'none';
-
+            let parsed = parsePaxStringToNumbers(team.paxInfo);
+            initModalAdultChildDropdowns(parsed.adult, parsed.child);
+            updateGigaTipPreview();
+            populateDropdowns(team.koreaGuide || "박재우", team.vietnamGuide || "", team.settlementCond);
+            renderModalFlightRows(team.flights || []);
             renderModalHotelRows(team.hotels);
-            renderModalCustomerTable(team.customers);
+            renderModalCustomerTable(team.customers || []);
             document.getElementById('directiveModal').style.display = 'flex';
         }
 
@@ -653,207 +896,114 @@
             document.getElementById('directiveModal').style.display = 'none';
         }
 
-        function populateSelectOptions(elemId, optionsArray, selectedVal) {
-            const sel = document.getElementById(elemId);
-            sel.innerHTML = '';
-            optionsArray.forEach(opt => {
-                let o = document.createElement('option');
-                o.value = opt;
-                o.innerText = opt;
-                if(opt === selectedVal) o.selected = true;
-                sel.appendChild(o);
-            });
-        }
-
-        function addSettlementOption() {
-            let area = document.getElementById('newSettlementAddArea');
-            area.style.display = area.style.display === 'flex' ? 'none' : 'flex';
-            document.getElementById('inputNewSettlementText').value = '';
-        }
-
-        function saveNewSettlementOption() {
-            let val = document.getElementById('inputNewSettlementText').value.trim();
-            if(!val) { alert("정산 조건을 입력해주세요."); return; }
-            if(!dropdownOptions.settlement.includes(val)) {
-                dropdownOptions.settlement.push(val);
-                saveAllToLocalStorage();
-            }
-            populateSelectOptions('selectSettlementCond', dropdownOptions.settlement, val);
-            document.getElementById('newSettlementAddArea').style.display = 'none';
-        }
-
-        function deleteSelectedSettlement() {
-            const sel = document.getElementById('selectSettlementCond');
-            let val = sel.value;
-            if(dropdownOptions.settlement.length <= 1) {
-                alert("최소 1개의 정산 조건은 유지되어야 합니다.");
-                return;
-            }
-            if(confirm(`"${val}" 정산 조건을 목록에서 삭제하시겠습니까?`)) {
-                dropdownOptions.settlement = dropdownOptions.settlement.filter(item => item !== val);
-                saveAllToLocalStorage();
-                populateSelectOptions('selectSettlementCond', dropdownOptions.settlement, dropdownOptions.settlement[0]);
-            }
-        }
-
-        function renderModalFlightRows(flights) {
-            const container = document.getElementById('modalFlightListContainer');
-            container.innerHTML = '';
-            (flights || []).forEach(f => {
-                let div = document.createElement('div');
-                div.style.cssText = "display: flex; gap: 4px; align-items: center;";
-                div.innerHTML = `
-                    <select class="m-flight-type" style="flex:1.1;">
-                        <option value="인천➔푸꾸옥" ${f.type === '인천➔푸꾸옥' ? 'selected':''}>인천➔푸꾸옥</option>
-                        <option value="푸꾸옥➔인천" ${f.type === '푸꾸옥➔인천' ? 'selected':''}>푸꾸옥➔인천</option>
-                        <option value="기타구간" ${f.type === '기타구간' ? 'selected':''}>기타구간</option>
-                    </select>
-                    <input type="text" class="m-flight-name" value="${f.name}" style="flex:1;" placeholder="편명 (VJ969)">
-                    <input type="text" class="m-flight-time" value="${f.time}" style="flex:0.8;" placeholder="시간 (11:10)">
-                    <input type="text" class="m-flight-pax" value="${f.pax || ''}" style="flex:0.8;" placeholder="미팅인원 (3명)">
-                    <button type="button" class="btn-del" onclick="this.closest('div').remove()">삭제</button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function addFlightRow() {
-            let container = document.getElementById('modalFlightListContainer');
-            let div = document.createElement('div');
-            div.style.cssText = "display: flex; gap: 4px; align-items: center;";
-            div.innerHTML = `
-                <select class="m-flight-type" style="flex:1.1;">
-                    <option value="인천➔푸꾸옥">인천➔푸꾸옥</option>
-                    <option value="푸꾸옥➔인천" selected>푸꾸옥➔인천</option>
-                    <option value="기타구간">기타구간</option>
-                </select>
-                <input type="text" class="m-flight-name" value="VJ000" style="flex:1;" placeholder="편명">
-                <input type="text" class="m-flight-time" value="00:00" style="flex:0.8;" placeholder="시간">
-                <input type="text" class="m-flight-pax" value="2명" style="flex:0.8;" placeholder="미팅인원">
-                <button type="button" class="btn-del" onclick="this.closest('div').remove()">삭제</button>
-            `;
-            container.appendChild(div);
-        }
-
-        function renderModalHotelRows(hotels) {
-            const container = document.getElementById('modalHotelListContainer');
-            container.innerHTML = '';
-            (hotels || []).forEach(h => {
-                let div = document.createElement('div');
-                div.style.cssText = "display: flex; gap: 4px; align-items: center;";
-                div.innerHTML = `
-                    <input type="text" class="m-hotel-name" value="${h.name}" style="flex:1.2;" placeholder="호텔명">
-                    <input type="text" class="m-hotel-room" value="${h.roomType}" style="flex:1.2;" placeholder="룸타입">
-                    <input type="text" class="m-hotel-count" value="${h.count}" style="width:40px; text-align:center;" placeholder="객실">
-                    <button type="button" class="btn-del" onclick="this.closest('div').remove()">삭제</button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function addHotelRow() {
-            let container = document.getElementById('modalHotelListContainer');
-            let div = document.createElement('div');
-            div.style.cssText = "display: flex; gap: 4px; align-items: center;";
-            div.innerHTML = `
-                <input type="text" class="m-hotel-name" value="노보텔" style="flex:1.2;" placeholder="호텔명">
-                <input type="text" class="m-hotel-room" value="Twin" style="flex:1.2;" placeholder="룸타입">
-                <input type="text" class="m-hotel-count" value="1" style="width:40px; text-align:center;" placeholder="객실">
-                <button type="button" class="btn-del" onclick="this.closest('div').remove()">삭제</button>
-            `;
-            container.appendChild(div);
-        }
-
-        function renderModalCustomerTable(customers) {
+        function renderModalCustomerTable(customersArray) {
             let tbody = document.getElementById('modalCustomerTableBody');
             tbody.innerHTML = '';
-            customers.forEach(c => {
-                let row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="padding:4px;"><input type="text" class="m-en" value="${c.enName}" style="font-size:11px; margin-bottom:2px;"><input type="text" class="m-ko" value="${c.koName}" style="font-size:11px;"></td>
-                    <td style="padding:4px;"><input type="text" class="m-birth" value="${c.birth}" style="font-size:11px;"></td>
-                    <td style="padding:4px;"><input type="text" class="m-phone" value="${c.phone}" style="font-size:11px;"></td>
-                    <td style="padding:4px; display:flex; gap:2px;"><input type="text" class="m-req" value="${c.req}" style="font-size:11px; flex:1;" placeholder="알레르기 등"><button class="btn-del" onclick="this.closest('tr').remove()">삭제</button></td>
-                `;
-                tbody.appendChild(row);
+            customersArray.forEach((c) => {
+                appendCustomerRowElement(c.enName || '', c.koName || '', c.birth || '', c.phone || '', c.req || '');
             });
         }
 
-        function addModalCustomerRow() {
+        function appendCustomerRowElement(en = '', ko = '', birth = '', phone = '', req = '') {
             let tbody = document.getElementById('modalCustomerTableBody');
             let row = document.createElement('tr');
             row.innerHTML = `
-                <td style="padding:4px;"><input type="text" class="m-en" value="GUEST/NAME" style="font-size:11px; margin-bottom:2px;"><input type="text" class="m-ko" value="" style="font-size:11px;"></td>
-                <td style="padding:4px;"><input type="text" class="m-birth" value="1990-01-01" style="font-size:11px;"></td>
-                <td style="padding:4px;"><input type="text" class="m-phone" value="0000" style="font-size:11px;"></td>
-                <td style="padding:4px; display:flex; gap:2px;"><input type="text" class="m-req" value="" style="font-size:11px; flex:1;" placeholder="알레르기 등"><button class="btn-del" onclick="this.closest('tr').remove()">삭제</button></td>
+                <td style="padding:4px;">
+                    <input type="text" class="m-en" value="${en}" placeholder="영문" style="margin-bottom:2px; font-size:11px;">
+                    <input type="text" class="m-ko" value="${ko}" placeholder="한글 입력 시 자동변환" style="font-size:11px;">
+                </td>
+                <td style="padding:4px;"><input type="text" class="m-birth" value="${birth}" placeholder="생년월일" style="font-size:11px;"></td>
+                <td style="padding:4px;"><input type="text" class="m-phone" value="${phone}" placeholder="예약번호" style="font-size:11px;"></td>
+                <td style="padding:4px; display:flex; gap:2px;">
+                    <input type="text" class="m-req" value="${req}" placeholder="요청" style="font-size:11px; flex:1;">
+                    <button class="btn-del" onclick="this.closest('tr').remove()">삭제</button>
+                </td>
             `;
             tbody.appendChild(row);
+            let koInput = row.querySelector('.m-ko');
+            let enInput = row.querySelector('.m-en');
+            koInput.oninput = function() {
+                let converted = convertKoToEnName(koInput.value);
+                if (converted) enInput.value = converted;
+            };
+        }
+
+        function addModalCustomerRow() {
+            appendCustomerRowElement('', '', '1990-01-01', '000000', '없음');
         }
 
         function saveActiveTeamData() {
+            let team = teamsData.find(t => t.id === activeTeamId);
+            if(!team && !isCreatingNewTeam) return;
+
+            let tourCodeVal = document.getElementById('inputTourCode').value;
+            let startDateVal = document.getElementById('inputStartDate').value;
+            let endDateVal = document.getElementById('inputEndDate').value;
+            let adultVal = parseInt(document.getElementById('modalAdultCount').value, 10);
+            let childVal = parseInt(document.getElementById('modalChildCount').value, 10);
+            let totalVal = adultVal + childVal;
+
+            let rawTip = document.getElementById('inputGigaTip').value.replace(/[^0-9]/g, '');
+            let tipNum = rawTip !== "" ? parseInt(rawTip, 10) : 50;
+
             let flights = [];
-            document.querySelectorAll('#modalFlightListContainer > div').forEach(div => {
+            document.querySelectorAll('#modalFlightListContainer > div').forEach(r => {
                 flights.push({
-                    type: div.querySelector('.m-flight-type').value,
-                    name: div.querySelector('.m-flight-name').value,
-                    time: div.querySelector('.m-flight-time').value,
-                    pax: div.querySelector('.m-flight-pax').value
+                    flightNo: r.querySelector('.modal-flight-no').value,
+                    time: r.querySelector('.modal-flight-time').value,
+                    paxCount: r.querySelector('.modal-flight-pax').value || "0"
                 });
             });
 
             let hotels = [];
-            document.querySelectorAll('#modalHotelListContainer > div').forEach(div => {
+            document.querySelectorAll('#modalHotelListContainer > div').forEach(r => {
                 hotels.push({
-                    name: div.querySelector('.m-hotel-name').value,
-                    roomType: div.querySelector('.m-hotel-room').value,
-                    count: div.querySelector('.m-hotel-count').value
+                    name: r.querySelector('.modal-hotel-name').value,
+                    roomType: r.querySelector('.modal-hotel-room').value,
+                    count: r.querySelector('.modal-hotel-count').value || "1"
                 });
             });
 
             let customers = [];
             document.querySelectorAll('#modalCustomerTableBody tr').forEach(row => {
                 customers.push({
-                    enName: row.querySelector('.m-en').value,
-                    koName: row.querySelector('.m-ko').value,
+                    enName: row.querySelector('.m-en').value || "GUEST/NAME",
+                    koName: row.querySelector('.m-ko').value || "",
                     birth: row.querySelector('.m-birth').value,
                     phone: row.querySelector('.m-phone').value,
                     req: row.querySelector('.m-req').value
                 });
             });
 
-            if (isCreatingNew) {
-                let newId = teamsData.length > 0 ? Math.max(...teamsData.map(t => t.id)) + 1 : 1;
-                let newTeam = {
+            if (isCreatingNewTeam) {
+                let newId = teamsData.length > 0 ? Math.max(...teamsData.map(t => t.id)) + 1 : 11;
+                team = {
                     id: newId,
+                    tourCode: tourCodeVal || ("TEAM" + newId),
+                    startDate: startDateVal || "2026-09-22",
+                    endDate: endDateVal || "2026-09-25",
                     flights: flights,
-                    startDate: document.getElementById('inputStartDate').value,
-                    endDate: document.getElementById('inputEndDate').value,
                     koreaGuide: document.getElementById('selectKoreaGuide').value,
-                    vietnamGuide: document.getElementById('inputVietnamGuide').value,
-                    settlementCond: document.getElementById('selectSettlementCond').value,
-                    gigaTip: document.getElementById('inputGigaTip').value,
-                    includedItems: document.getElementById('inputIncludedItems').value.split(',').map(s => s.trim()).filter(Boolean),
-                    sendingItems: document.getElementById('inputSendingItems').value.split(',').map(s => s.trim()).filter(Boolean),
+                    vietnamGuide: document.getElementById('selectVietnamGuide').value,
+                    paxInfo: `성인 ${adultVal}명, 소아 ${childVal}명 (총 ${totalVal}명)`,
                     hotels: hotels,
+                    settlementCond: document.getElementById('selectSettlementCond').value,
+                    gigaTip: `$${tipNum} × ${totalVal}명 = $${tipNum * totalVal}`,
                     customers: customers
                 };
-                teamsData.push(newTeam);
+                teamsData.push(team);
                 activeTeamId = newId;
             } else {
-                let team = teamsData.find(t => t.id === activeTeamId);
-                if(!team) return;
-
+                team.tourCode = tourCodeVal;
+                team.startDate = startDateVal;
+                team.endDate = endDateVal;
                 team.flights = flights;
-                team.startDate = document.getElementById('inputStartDate').value;
-                team.endDate = document.getElementById('inputEndDate').value;
                 team.koreaGuide = document.getElementById('selectKoreaGuide').value;
-                team.vietnamGuide = document.getElementById('inputVietnamGuide').value;
+                team.vietnamGuide = document.getElementById('selectVietnamGuide').value;
                 team.settlementCond = document.getElementById('selectSettlementCond').value;
-                team.gigaTip = document.getElementById('inputGigaTip').value;
-                team.includedItems = document.getElementById('inputIncludedItems').value.split(',').map(s => s.trim()).filter(Boolean);
-                team.sendingItems = document.getElementById('inputSendingItems').value.split(',').map(s => s.trim()).filter(Boolean);
                 team.hotels = hotels;
+                team.paxInfo = `성인 ${adultVal}명, 소아 ${childVal}명 (총 ${totalVal}명)`;
+                team.gigaTip = `$${tipNum} × ${totalVal}명 = $${tipNum * totalVal}`;
                 team.customers = customers;
             }
 
@@ -863,9 +1013,29 @@
             alert("저장되었습니다!");
         }
 
+        function addNewTeam() {
+            isCreatingNewTeam = true;
+            document.getElementById('directiveModalTitle').innerText = '➕ 새 행사업무 등록';
+            let newId = teamsData.length > 0 ? Math.max(...teamsData.map(t => t.id)) + 1 : 11;
+            document.getElementById('inputTourCode').value = "TEAM" + newId;
+            document.getElementById('inputStartDate').value = "2026-09-22";
+            document.getElementById('inputEndDate').value = "2026-09-25";
+            document.getElementById('inputGigaTip').value = "50";
+            initModalAdultChildDropdowns(4, 2);
+            updateGigaTipPreview();
+            populateDropdowns("박재우", dropdownOptions.vietnamGuide[0] || "", dropdownOptions.settlement[0] || "");
+            renderModalFlightRows([{ flightNo: 'VJ974', time: '08:00 도착', paxCount: '6' }]);
+            renderModalHotelRows([{ name: dropdownOptions.hotelList[0], roomType: dropdownOptions.roomTypes[0], count: "2" }]);
+            renderModalCustomerTable([{ enName: "HONG/GILDONG", koName: "홍길동", birth: "1990-01-01", phone: "000000", req: "없음" }]);
+            document.getElementById('directiveModal').style.display = 'flex';
+        }
+
         function deleteActiveTeam() {
-            if(teamsData.length <= 1) { alert("최소 1개의 행사는 유지되어야 합니다."); return; }
-            if(confirm("정말 이 행사를 삭제하시겠습니까?")) {
+            if (teamsData.length <= 1) {
+                alert("최소 1개의 행사업무는 유지되어야 합니다.");
+                return;
+            }
+            if (confirm("정말 삭제하시겠습니까?")) {
                 teamsData = teamsData.filter(t => t.id !== activeTeamId);
                 activeTeamId = teamsData[0].id;
                 saveAllToLocalStorage();
@@ -877,28 +1047,29 @@
             const container = document.getElementById('detailTimelineContainer');
             if(!container) return;
             container.innerHTML = '';
-            let team = teamsData.find(t => t.id === activeTeamId);
-            if(!team || !team.startDate || !team.endDate) return;
 
-            let curr = new Date(team.startDate);
-            let end = new Date(team.endDate);
+            let activeTeam = teamsData.find(t => t.id === activeTeamId);
+            if(!activeTeam || !activeTeam.startDate || !activeTeam.endDate) return;
+
+            let curr = new Date(activeTeam.startDate);
+            let eDate = new Date(activeTeam.endDate);
             let dayCount = 1;
 
-            while(curr <= end) {
+            while(curr <= eDate) {
                 let dateKey = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
-                let val = dailySchedules[dateKey] || '';
+                let scheduleText = dailySchedules[dateKey] || '';
 
                 let card = document.createElement('div');
                 card.className = 'timeline-card';
                 card.innerHTML = `
                     <div class="timeline-card-header">
                         <span>🗓️ ${dayCount}일차 (${dateKey})</span>
-                        <div style="display:flex; gap:4px;">
-                            <button class="btn-main" style="background:#f29900; font-size:10px; padding:3px 6px;" onclick="openPresetModal('${dateKey}')">✨ 코스선택</button>
-                            <button class="btn-main" style="background:#34a853; font-size:10px; padding:3px 6px;" onclick="saveSchedule('${dateKey}', this)">저장</button>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn-main" style="padding: 3px 6px; font-size: 10px; background-color: #f29900;" onclick="openPresetModal('${dateKey}')">✨ 코스 선택</button>
+                            <button class="btn-main" style="padding: 3px 8px; font-size: 11px; background-color: #34a853;" onclick="saveDirectSchedule('${dateKey}', this)">저장</button>
                         </div>
                     </div>
-                    <textarea class="t-${dateKey}" style="width:100%; height:60px; font-size:12px;" placeholder="오전/오후 일정 및 식사 메뉴 입력">${val}</textarea>
+                    <textarea class="timeline-textarea-${dateKey}" style="width: 100%; height: 65px; font-size: 12px; padding: 6px; box-sizing: border-box; resize: vertical;" placeholder="일정을 직접 수정하거나 '코스 선택' 버튼으로 채워보세요.">${scheduleText}</textarea>
                 `;
                 container.appendChild(card);
                 curr.setDate(curr.getDate() + 1);
@@ -910,71 +1081,165 @@
             targetPresetDateKey = dateKey;
             const container = document.getElementById('presetListContainer');
             container.innerHTML = '';
+
             tourPresets.forEach(preset => {
                 let btn = document.createElement('button');
                 btn.className = 'preset-btn';
                 btn.innerText = preset;
                 btn.onclick = function() {
-                    let ta = document.querySelector(`.t-${targetPresetDateKey}`);
-                    if(ta) ta.value = preset;
+                    let textarea = document.querySelector(`.timeline-textarea-${targetPresetDateKey}`);
+                    if(textarea) {
+                        textarea.value = preset;
+                    }
                     closePresetModal();
                 };
                 container.appendChild(btn);
             });
+
             document.getElementById('schedulePresetModal').style.display = 'flex';
         }
 
-        function closePresetModal() { document.getElementById('schedulePresetModal').style.display = 'none'; }
+        function closePresetModal() {
+            document.getElementById('schedulePresetModal').style.display = 'none';
+        }
 
-        function saveSchedule(dateKey, btn) {
-            let val = btn.closest('.timeline-card').querySelector('textarea').value.trim();
-            if(val) dailySchedules[dateKey] = val; else delete dailySchedules[dateKey];
+        function openPresetManageModal() {
+            closePresetModal();
+            renderPresetManageList();
+            document.getElementById('presetManageModal').style.display = 'flex';
+        }
+
+        function closePresetManageModal() {
+            document.getElementById('presetManageModal').style.display = 'none';
+        }
+
+        function renderPresetManageList() {
+            const container = document.getElementById('presetManageListContainer');
+            container.innerHTML = '';
+
+            tourPresets.forEach((preset, index) => {
+                let itemDiv = document.createElement('div');
+                itemDiv.style.cssText = "display: flex; gap: 5px; align-items: center; background: #f8f9fa; padding: 6px; border: 1px solid #ddd; border-radius: 4px;";
+                
+                let textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.value = preset;
+                textInput.style.flex = '1';
+                textInput.style.fontSize = '12px';
+                textInput.oninput = function() {
+                    tourPresets[index] = textInput.value;
+                    saveAllToLocalStorage();
+                };
+
+                let delBtn = document.createElement('button');
+                delBtn.className = 'btn-del';
+                delBtn.innerText = '삭제';
+                delBtn.onclick = function() {
+                    tourPresets.splice(index, 1);
+                    saveAllToLocalStorage();
+                    renderPresetManageList();
+                };
+
+                itemDiv.appendChild(textInput);
+                itemDiv.appendChild(delBtn);
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function addTourPresetItem() {
+            let input = document.getElementById('newPresetInput');
+            let val = input.value.trim();
+            if(val !== "") {
+                tourPresets.push(val);
+                input.value = "";
+                saveAllToLocalStorage();
+                renderPresetManageList();
+                alert("코스가 추가되었습니다!");
+            }
+        }
+
+        function saveDirectSchedule(dateKey, btnObj) {
+            let card = btnObj.closest('.timeline-card');
+            let textarea = card.querySelector('textarea');
+            let val = textarea.value.trim();
+
+            if(val === "") {
+                delete dailySchedules[dateKey];
+            } else {
+                dailySchedules[dateKey] = val;
+            }
             saveAllToLocalStorage();
             renderScheduleCalendar();
-            alert("일정이 저장되었습니다!");
+            alert(`[${dateKey}] 일정이 저장되었습니다!`);
         }
 
         function renderScheduleCalendar() {
             const grid = document.getElementById('scheduleCalendarGrid');
             if(!grid) return;
             grid.innerHTML = '';
-            let team = teamsData.find(t => t.id === activeTeamId);
-            let y = 2026, m = 9;
-            if(team && team.startDate) {
-                let p = team.startDate.split('-');
-                y = parseInt(p[0], 10); m = parseInt(p[1], 10);
-                document.getElementById('calendarHeaderTitle').innerText = `${y}년 ${m}월 행사 일정표`;
+
+            let activeTeam = teamsData.find(t => t.id === activeTeamId);
+            let targetYear = 2026, targetMonth = 9;
+            if(activeTeam && activeTeam.startDate) {
+                let p = activeTeam.startDate.split('-');
+                if(p.length >= 2) {
+                    targetYear = parseInt(p[0], 10);
+                    targetMonth = parseInt(p[1], 10);
+                    document.getElementById('calendarHeaderTitle').innerText = `${targetYear}년 ${targetMonth}월 행사 일정표`;
+                }
             }
 
-            ['일','월','화','수','목','금','토'].forEach(d => {
+            const daysName = ['일', '월', '화', '수', '목', '금', '토'];
+            daysName.forEach(day => {
                 let div = document.createElement('div');
                 div.className = 'calendar-day-name';
-                div.innerText = d;
+                div.innerText = day;
                 grid.appendChild(div);
             });
 
-            let firstIdx = new Date(y, m - 1, 1).getDay();
-            let totalD = new Date(y, m, 0).getDate();
-            for(let i=0; i<firstIdx; i++) grid.appendChild(document.createElement('div')).className = 'calendar-cell';
+            let firstDayIndex = new Date(targetYear, targetMonth - 1, 1).getDay();
+            let totalDays = new Date(targetYear, targetMonth, 0).getDate();
 
-            for(let d=1; d<=totalD; d++) {
+            for (let i = 0; i < firstDayIndex; i++) {
+                grid.appendChild(document.createElement('div')).className = 'calendar-cell';
+            }
+
+            for (let d = 1; d <= totalDays; d++) {
                 let cell = document.createElement('div');
                 cell.className = 'calendar-cell';
-                let dateKey = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                cell.innerHTML = `<div class="day-number">${d}</div>`;
-                
-               
-                if(dailySchedules[dateKey]) {
+                let dateKey = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+                let numDiv = document.createElement('div');
+                numDiv.className = 'day-number';
+                numDiv.innerText = d;
+                cell.appendChild(numDiv);
+
+                teamsData.forEach(team => {
+                    if (team.startDate && team.endDate && new Date(dateKey) >= new Date(team.startDate) && new Date(dateKey) <= new Date(team.endDate)) {
+                        let badge = document.createElement('div');
+                        badge.className = 'calendar-event-badge';
+                        if(team.id === activeTeamId) badge.style.background = '#34a853';
+                        badge.innerText = `🌴 ${team.tourCode}`;
+                        cell.appendChild(badge);
+                    }
+                });
+
+                if (dailySchedules[dateKey]) {
                     let item = document.createElement('div');
                     item.className = 'calendar-schedule-item';
                     item.innerText = dailySchedules[dateKey];
                     cell.appendChild(item);
                 }
+
                 grid.appendChild(cell);
             }
         }
 
-        window.onload = function() { loadTeamData(activeTeamId); };
+        window.onload = function() {
+            if(teamsData.length > 0) {
+                loadTeamData(activeTeamId);
+            }
+        };
     </script>
 </body>
 </html>
