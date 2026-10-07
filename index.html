@@ -292,6 +292,27 @@
             .calendar-schedule-item::before { content: '📝'; font-size: 12px; }
             .preset-btn { font-size: 14px; padding: 12px; }
         }
+        #directiveModal .modal-content { padding: 0 16px; }
+        .modal-head { position: sticky; top: 0; z-index: 5; background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 12px 0 8px; border-bottom: 1px solid #eee; margin-bottom: 10px; }
+        .modal-head h3 { margin: 0; }
+        .modal-foot { position: sticky; bottom: 0; z-index: 5; background: #fff; display: flex; gap: 8px; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #eee; margin-top: 10px; }
+        .m-sec { background: #e8f0fe; color: #1a73e8; font-weight: bold; font-size: 13px; padding: 6px 10px; border-radius: 6px; margin: 16px 0 8px; }
+        @media (max-width: 600px) {
+            #directiveModal .modal-content { max-height: 100%; height: 100%; border-radius: 0; }
+            #directiveModal { align-items: stretch; }
+            #modalHotelListContainer > div { flex-wrap: wrap; }
+            #modalHotelListContainer .modal-hotel-name, #modalHotelListContainer .modal-hotel-room { flex: 1 1 100% !important; }
+            #modalHotelListContainer .modal-hotel-count { flex: 1; width: auto !important; }
+            #modalCustomerTableBody tr { padding: 10px; }
+        }
+        .g-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 6px; color: #fff; vertical-align: middle; }
+        .g-F { background: #e91e8c; } .g-M { background: #1a73e8; }
+        #directiveModal .cust-table textarea { width: 100%; box-sizing: border-box; min-height: 52px; resize: vertical; }
+        @media (min-width: 601px) {
+            #directiveModal .modal-content { max-width: 980px; width: 95%; }
+            #directiveModal .cust-table { table-layout: fixed; width: 100%; }
+            #directiveModal .cust-table td { vertical-align: top; }
+        }
     </style>
 </head>
 <body>
@@ -338,6 +359,7 @@
         <tr><th>행사 일정 (기간)</th><td id="viewDateRange" style="font-weight: bold; color: #1a73e8;">-</td></tr>
         <tr><th>가이드 정보 (한/베)</th><td id="viewGuideInfo">-</td></tr>
         <tr><th>인원 정보</th><td id="viewPaxInfo">-</td></tr>
+        <tr><th>성별 인원</th><td id="viewGenderInfo" style="font-weight:bold;">-</td></tr>
         <tr><th>호텔 및 룸타입 정보</th><td id="viewHotelInfo" style="line-height: 1.4;">-</td></tr>
         <tr><th>정산 조건</th><td id="viewSettlementCond">-</td></tr>
         <tr><th>기가팁 금액</th><td id="viewGigaTip">-</td></tr>
@@ -378,8 +400,9 @@
     <!-- 📝 지시서 및 고객 모달창 -->
     <div id="directiveModal" class="modal">
         <div class="modal-content">
-            <h3 id="directiveModalTitle">📝 행사 기간 및 가이드 상세 편집</h3>
+            <div class="modal-head"><h3 id="directiveModalTitle">📝 행사 기간 및 가이드 상세 편집</h3><button type="button" class="btn-del" style="padding:6px 12px;" onclick="closeDirectiveModal()">✕</button></div>
             
+            <div class="m-sec">📌 기본 정보</div>
             <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">투어 코드</label>
             <input type="text" id="inputTourCode" style="margin-bottom: 8px;">
 
@@ -423,6 +446,7 @@
                 </div>
             </div>
 
+            <div class="m-sec">🏨 호텔 / 정산</div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 4px;">
                 <button type="button" class="btn-main" style="padding: 3px 8px; font-size: 11px; background-color: #34a853;" onclick="addHotelRow()">＋ 호텔행 추가</button>
                 <div style="display: flex; gap: 6px; align-items: center;">
@@ -445,21 +469,25 @@
             </div>
             <div id="gigaTipPreviewText" style="font-size: 11px; color: #1a73e8; margin-bottom: 12px; font-weight: bold;">연동 결과: -</div>
 
-            <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">고객 명단 관리 (한글 입력 시 영문 자동변환)</label>
+            <div class="m-sec">👥 고객 명단</div>
+            <div style="font-size:11px;color:#666;margin-bottom:6px;">한글 이름을 입력하면 영문이 자동 제안됩니다. 여권 표기와 다를 수 있으니 꼭 확인하세요.</div>
+            <div id="modalGenderCount" style="font-size:13px;font-weight:bold;margin-bottom:6px;"></div>
             <table class="cust-table" style="margin-bottom: 8px;">
                 <thead>
                     <tr>
-                        <th style="font-size:10px; padding:4px;">성함 (영문 / 한글)</th>
-                        <th style="font-size:10px; padding:4px;">생년월일</th>
-                        <th style="font-size:10px; padding:4px;">예약번호</th>
-                        <th style="font-size:10px; padding:4px;">요청사항 / 삭제</th>
+                        <th style="font-size:10px; padding:4px; width:26%;">성함 (영문 / 한글)</th>
+                        <th style="font-size:10px; padding:4px; width:9%;">성별</th>
+                        <th style="font-size:10px; padding:4px; width:15%;">생년월일</th>
+                        <th style="font-size:10px; padding:4px; width:12%;">예약번호</th>
+                        <th style="font-size:10px; padding:4px; width:30%;">요청사항</th>
+                        <th style="font-size:10px; padding:4px; width:8%;">삭제</th>
                     </tr>
                 </thead>
                 <tbody id="modalCustomerTableBody"></tbody>
             </table>
             <button class="btn-main" style="background-color: #34a853; width: 100%; margin-bottom: 15px;" onclick="addModalCustomerRow()">＋ 고객 추가</button>
 
-            <div style="display: flex; gap: 5px;">
+            <div class="modal-foot">
                 <button class="btn-main" style="flex: 1; padding: 10px;" onclick="saveActiveTeamData()">저장 및 반영하기</button>
                 <button class="btn-del" style="flex: 1; padding: 10px; font-size: 13px;" onclick="closeDirectiveModal()">취소</button>
             </div>
@@ -579,6 +607,7 @@
 
         // ☁️ 로그인 후 실시간 동기화
         let syncRef = null;
+        let initialPicked = false; // 로그인 후 최초 1회만 '최근 저장 행사'를 선택
         function onSyncValue(snapshot) {
             const data = snapshot.val();
             if (data) {
@@ -588,6 +617,12 @@
                 if (data.dropdownOptions) dropdownOptions = data.dropdownOptions;
                 migrateSchedules();
 
+                if (!initialPicked && teamsData.length > 0) {
+                    // 가장 최근에 저장한 행사 우선, 기록이 없으면 가장 나중에 등록한 행사
+                    const recent = teamsData.filter(t => t.updatedAt).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+                    activeTeamId = recent ? recent.id : teamsData[teamsData.length - 1].id;
+                    initialPicked = true;
+                }
                 let activeExists = teamsData.some(t => t.id === activeTeamId);
                 if (!activeExists && teamsData.length > 0) {
                     activeTeamId = teamsData[0].id;
@@ -606,6 +641,7 @@
         function stopSync() {
             if (syncRef) { syncRef.off('value', onSyncValue); syncRef = null; }
             dataLoaded = false;
+            initialPicked = false;
         }
 
         // 🔐 로그인 / 로그아웃
@@ -675,12 +711,24 @@
             });
         }
 
+        function genderCounts(list) {
+            const r = { f: 0, m: 0, u: 0 };
+            list.forEach(g => { if (g === 'F') r.f++; else if (g === 'M') r.m++; else r.u++; });
+            return r;
+        }
+        function genderText(r) { return `👩 여자 ${r.f}명 / 👨 남자 ${r.m}명` + (r.u ? ` / 미지정 ${r.u}명` : ''); }
+        function updateGenderCount() {
+            const el = document.getElementById('modalGenderCount'); if (!el) return;
+            el.innerText = genderText(genderCounts([...document.querySelectorAll('#modalCustomerTableBody .m-gender')].map(s => s.value)));
+        }
+
         function copyDirective() {
             const t = teamsData.find(x => x.id === activeTeamId); if (!t) return;
             const L = [`[${t.tourCode}] ${t.startDate} ~ ${t.endDate}`, `가이드: 한국 ${t.koreaGuide} / 베트남 ${t.vietnamGuide || '-'}`, `인원: ${t.paxInfo || '-'}`];
             (t.hotels || []).forEach(h => L.push(`호텔: ${h.name} / ${h.roomType} ${h.count}객실`));
             L.push(`정산: ${t.settlementCond || '-'}`, `기가팁: ${t.gigaTip || '-'}`, '', '[고객]');
-            (t.customers || []).forEach(c => L.push(`- ${c.enName} (${c.koName}) ${c.birth} / ${c.phone} / ${c.req}`));
+            L.push(genderText(genderCounts((t.customers || []).map(c => c.gender))));
+            (t.customers || []).forEach(c => L.push(`- ${c.enName} (${c.koName}) ${c.gender === 'F' ? '여' : c.gender === 'M' ? '남' : ''} ${c.birth} / ${c.phone} / ${c.req}`));
             L.push('', '[일정]');
             let curr = parseDate(t.startDate), e = parseDate(t.endDate), n = 1;
             while (curr <= e) {
@@ -720,20 +768,20 @@
         }
 
         function convertKoToEnName(koName) {
-            if (!koName || !koName.trim()) return "";
-            let cleaned = koName.trim().replace(/\s+/g, '');
-            if (cleaned.length < 2) return cleaned.toUpperCase();
-            const firstLetterMap = { '김': 'KIM', '이': 'LEE', '박': 'PARK', '최': 'CHOI', '정': 'JUNG', '강': 'KANG', '조': 'CHO', '윤': 'YOON', '장': 'JANG', '임': 'LIM', '한': 'HAN', '오': 'OH', '서': 'SEO', '신': 'SHIN', '홍': 'HONG' };
-            const syllableMap = { '가': 'KA', '나': 'NA', '다': 'DA', '라': 'RA', '마': 'MA', '바': 'BA', '사': 'SA', '아': 'A', '자': 'JA', '차': 'CHA', '카': 'KA', '타': 'TA', '파': 'PA', '하': 'HA', '길': 'GIL', '동': 'DONG', '민': 'MIN', '영': 'YEONG', '수': 'SU' };
-            let firstChar = cleaned.charAt(0);
-            let lastName = firstLetterMap[firstChar]; if (!lastName) return "";
-            let restChars = cleaned.substring(1);
-            let firstNames = [];
-            for (let i = 0; i < restChars.length; i++) {
-                let ch = restChars.charAt(i);
-                if (!syllableMap[ch]) return ""; firstNames.push(syllableMap[ch]);
-            }
-            return `${lastName}/${firstNames.join('')}`;
+            if (!koName) return "";
+            const s = koName.trim().replace(/\s+/g, '');
+            if (s.length < 2 || !/^[가-힣]+$/.test(s)) return "";
+            const IN = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+            const ME = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+            const FI = ['','k','k','k','n','n','n','t','l','k','m','l','l','l','p','l','m','p','p','t','t','ng','t','t','k','t','p','t'];
+            const rom = ch => { const c = ch.charCodeAt(0) - 0xAC00; return IN[Math.floor(c / 588)] + ME[Math.floor((c % 588) / 28)] + FI[c % 28]; };
+            const toMap = str => Object.fromEntries(str.split(',').map(x => x.split(':')));
+            const SUR = toMap('김:KIM,이:LEE,박:PARK,최:CHOI,정:JUNG,강:KANG,조:CHO,윤:YOON,장:JANG,임:LIM,한:HAN,오:OH,서:SEO,신:SHIN,홍:HONG,배:BAE,송:SONG,권:KWON,황:HWANG,안:AN,유:YOO,전:JEON,고:KO,문:MOON,양:YANG,손:SON,백:BAEK,허:HEO,남:NAM,심:SHIM,노:NO,하:HA,곽:KWAK,성:SUNG,차:CHA,주:JOO,우:WOO,구:KOO,민:MIN,류:RYU,나:NA,진:JIN,지:JI,엄:UM,채:CHAE,원:WON,천:CHUN,방:BANG,공:KONG,현:HYUN,함:HAM,변:BYUN,염:YUM,여:YEO,추:CHOO,도:DO,소:SO,석:SEOK,선:SUN,설:SEOL,마:MA,길:GIL,연:YEON,위:WI,표:PYO,명:MYUNG,기:KI,반:BAN,왕:WANG,금:KEUM,옥:OK,인:IN,맹:MAENG,제:JE,모:MO,탁:TAK,국:KOOK,은:EUN,경:KYUNG,봉:BONG,사:SA,부:BU,예:YE,용:YONG,어:EO,편:PYUN');
+            const DSUR = toMap('황보:HWANGBO,남궁:NAMGUNG,선우:SUNWOO,제갈:JEGAL,독고:DOKGO,사공:SAGONG,서문:SEOMOON');
+            let sur, rest;
+            if (s.length >= 3 && DSUR[s.substr(0, 2)]) { sur = DSUR[s.substr(0, 2)]; rest = s.substr(2); }
+            else { sur = SUR[s[0]] || rom(s[0]).toUpperCase(); rest = s.substr(1); }
+            return `${sur}/${[...rest].map(rom).join('').toUpperCase()}`;
         }
 
         function updateTeamDropdown() {
@@ -767,6 +815,7 @@
             document.getElementById('viewGuideInfo').innerText = `🇰🇷 한국: ${team.koreaGuide} / 🇻🇳 베트남: ${team.vietnamGuide || "없음"}`;
             const px = parsePaxStringToNumbers(team.paxInfo); const cc = (team.customers || []).length;
             document.getElementById('viewPaxInfo').innerText = (team.paxInfo || "-") + (cc !== px.adult + px.child ? ` ⚠️ 명단 ${cc}명` : '');
+            document.getElementById('viewGenderInfo').innerText = genderText(genderCounts((team.customers || []).map(c => c.gender)));
             
             let hotelDisplayHtml = team.hotels.map(h => `🏨 <strong>${esc(h.name)}</strong><br>&nbsp;&nbsp;&nbsp;└ 🛏️ ${esc(h.roomType)} (${esc(h.count)}객실)`).join('<br>');
             document.getElementById('viewHotelInfo').innerHTML = hotelDisplayHtml || "-";
@@ -786,7 +835,7 @@
             customersArray.forEach(c => {
                 let row = document.createElement('tr');
                 row.innerHTML = `
-                    <td data-label="성함"><strong>${esc(c.enName)}</strong><br><span style="color:#555;">${esc(c.koName)}</span></td>
+                    <td data-label="성함"><strong style="font-size:17px;">${esc(c.enName)}</strong>${c.gender ? `<span class="g-badge g-${c.gender}">${c.gender === 'F' ? '여' : '남'}</span>` : ''}<br><span style="color:#333;font-size:15px;">${esc(c.koName)}</span></td>
                     <td data-label="생년월일 / 나이">${esc(c.birth)} <span class="age-badge">${esc(calculateAgeNum(c.birth, refDate))}</span></td>
                     <td data-label="예약번호">${esc(c.phone)}</td>
                     <td data-label="요청사항">${esc(c.req)}</td>`;
@@ -986,7 +1035,7 @@
             populateDropdowns(team.koreaGuide || "박재우", team.vietnamGuide || "", team.settlementCond);
             renderModalHotelRows(team.hotels);
             renderModalCustomerTable(team.customers || []);
-            document.getElementById('directiveModal').style.display = 'flex';
+            document.getElementById('directiveModal').style.display = 'flex'; document.querySelector('#directiveModal .modal-content').scrollTop = 0;
         }
 
         function closeDirectiveModal() {
@@ -995,13 +1044,13 @@
 
         function renderModalCustomerTable(customersArray) {
             let tbody = document.getElementById('modalCustomerTableBody');
-            tbody.innerHTML = '';
+            tbody.innerHTML = ''; updateGenderCount();
             customersArray.forEach((c) => {
-                appendCustomerRowElement(c.enName || '', c.koName || '', c.birth || '', c.phone || '', c.req || '');
+                appendCustomerRowElement(c.enName || '', c.koName || '', c.birth || '', c.phone || '', c.req || '', c.gender || '');
             });
         }
 
-        function appendCustomerRowElement(en = '', ko = '', birth = '', phone = '', req = '') {
+        function appendCustomerRowElement(en = '', ko = '', birth = '', phone = '', req = '', gender = '') {
             let tbody = document.getElementById('modalCustomerTableBody');
             let row = document.createElement('tr');
             row.innerHTML = `
@@ -1009,21 +1058,24 @@
                     <input type="text" class="m-en" value="${esc(en)}" placeholder="영문 (여권 표기)" style="margin-bottom:2px;">
                     <input type="text" class="m-ko" value="${esc(ko)}" placeholder="한글 (영문 비어있을 때 자동제안)">
                 </td>
+                <td data-label="성별" style="padding:4px;">
+                    <select class="m-gender"><option value="">선택</option><option value="F"${gender === 'F' ? ' selected' : ''}>여</option><option value="M"${gender === 'M' ? ' selected' : ''}>남</option></select>
+                </td>
                 <td data-label="생년월일" style="padding:4px;"><input type="text" class="m-birth" value="${esc(birth)}" placeholder="1990-01-01" inputmode="numeric"></td>
                 <td data-label="예약번호" style="padding:4px;"><input type="text" class="m-phone" value="${esc(phone)}" placeholder="예약번호"></td>
-                <td data-label="요청사항" style="padding:4px; display:flex; gap:2px;">
-                    <input type="text" class="m-req" value="${esc(req)}" placeholder="요청" style="flex:1;">
-                    <button class="btn-del" onclick="this.closest('tr').remove()">삭제</button>
-                </td>`;
+                <td data-label="요청사항" style="padding:4px;"><textarea class="m-req" placeholder="요청사항">${esc(req)}</textarea></td>
+                <td style="padding:4px;"><button class="btn-del" onclick="this.closest('tr').remove(); updateGenderCount();">삭제</button></td>`;
             tbody.appendChild(row);
             const koI = row.querySelector('.m-ko'), enI = row.querySelector('.m-en');
-            if (en) enI.dataset.manual = '1';
+            if (en && en !== convertKoToEnName(ko)) enI.dataset.manual = '1';
             enI.oninput = () => { enI.dataset.manual = enI.value ? '1' : ''; };
             koI.oninput = () => { if (!enI.dataset.manual) { const c = convertKoToEnName(koI.value); if (c) enI.value = c; } };
+            row.querySelector('.m-gender').onchange = updateGenderCount;
+            updateGenderCount();
         }
 
         function addModalCustomerRow() {
-            appendCustomerRowElement('', '', '1990-01-01', '000000', '없음');
+            appendCustomerRowElement();
         }
 
         function saveActiveTeamData() {
@@ -1055,6 +1107,7 @@
                 customers.push({
                     enName: row.querySelector('.m-en').value || "GUEST/NAME",
                     koName: row.querySelector('.m-ko').value || "",
+                    gender: row.querySelector('.m-gender').value,
                     birth: row.querySelector('.m-birth').value,
                     phone: row.querySelector('.m-phone').value,
                     req: row.querySelector('.m-req').value
@@ -1090,6 +1143,7 @@
                 team.gigaTip = `$${tipNum} × ${totalVal}명 = $${tipNum * totalVal}`;
                 team.customers = customers;
             }
+            team.updatedAt = Date.now();
 
             saveAllToLocalStorage();
             closeDirectiveModal();
@@ -1102,15 +1156,16 @@
             document.getElementById('directiveModalTitle').innerText = '➕ 새 행사업무 등록';
             let newId = teamsData.length > 0 ? Math.max(...teamsData.map(t => t.id)) + 1 : 11;
             document.getElementById('inputTourCode').value = "TEAM" + newId;
-            document.getElementById('inputStartDate').value = "2026-09-22";
-            document.getElementById('inputEndDate').value = "2026-09-25";
+            const _s = new Date(), _e = new Date(); _e.setDate(_e.getDate() + 3);
+            document.getElementById('inputStartDate').value = fmtKey(_s);
+            document.getElementById('inputEndDate').value = fmtKey(_e);
             document.getElementById('inputGigaTip').value = "50";
             initModalAdultChildDropdowns(4, 2);
             updateGigaTipPreview();
             populateDropdowns("박재우", dropdownOptions.vietnamGuide[0] || "", dropdownOptions.settlement[0] || "");
             renderModalHotelRows([{ name: dropdownOptions.hotelList[0], roomType: dropdownOptions.roomTypes[0], count: "2" }]);
-            renderModalCustomerTable([{ enName: "HONG/GILDONG", koName: "홍길동", birth: "1990-01-01", phone: "000000", req: "없음" }]);
-            document.getElementById('directiveModal').style.display = 'flex';
+            renderModalCustomerTable([{}]);
+            document.getElementById('directiveModal').style.display = 'flex'; document.querySelector('#directiveModal .modal-content').scrollTop = 0;
         }
 
         function deleteActiveTeam() {
@@ -1265,6 +1320,7 @@
             else dailySchedules[sk] = { tour: v.tour, breakfast: v.b, lunch: v.l, dinner: v.d, remark: v.r };
             delete unsaved[sk];
             card.querySelector('.dirty-mark').style.display = 'none';
+            const tm = teamsData.find(x => x.id === activeTeamId); if (tm) tm.updatedAt = Date.now();
             saveAllToLocalStorage();
             renderScheduleCalendar();
             toast(`${dateKey} 저장됨 ✅`);
