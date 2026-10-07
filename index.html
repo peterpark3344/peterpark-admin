@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>푸꾸옥 가이드 수익 및 행사 관리</title>
     <!-- Firebase SDK (v9 호환 모드) 추가 -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -260,6 +260,38 @@
         .login-box button { width: 100%; padding: 10px; font-size: 14px; }
         #loginError { color: #ea4335; font-size: 12px; min-height: 16px; margin-bottom: 6px; text-align: center; }
         .top-actions { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 8px; }
+        html { scroll-behavior: smooth; }
+        .section-title { scroll-margin-top: 70px; }
+        .calendar-container { background: #fff; border-color: #ddd; color: #333; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; color: #1a73e8; }
+        .cal-nav { background: #e8f0fe; color: #1a73e8; border: none; border-radius: 6px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+        .calendar-day-name { background: #f1f3f4; color: #666; }
+        .calendar-cell { background: #fff; border-color: #e5e7eb; min-height: 80px; }
+        .calendar-cell.today { outline: 2px solid #f29900; }
+        .day-number { color: #666; }
+        .calendar-schedule-item { background: #f1f8e9; color: #333; }
+        .bottom-nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: 100%; max-width: 600px; display: flex; background: #fff; border-top: 1px solid #ddd; z-index: 60; padding-bottom: env(safe-area-inset-bottom); }
+        .bottom-nav a { flex: 1; text-align: center; padding: 12px 0; font-size: 13px; font-weight: bold; color: #1a73e8; text-decoration: none; }
+        #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(70px + env(safe-area-inset-bottom)); background: #323232; color: #fff; padding: 10px 16px; border-radius: 20px; font-size: 13px; z-index: 100000; opacity: 0; transition: opacity .25s; pointer-events: none; }
+        #toast.show { opacity: 1; }
+        body { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+        @media (max-width: 600px) {
+            body { padding-left: 10px; padding-right: 10px; }
+            input[type="text"], input[type="date"], input[type="email"], input[type="password"], select, textarea { font-size: 16px !important; min-height: 40px; }
+            .btn-main, .btn-del { min-height: 36px; font-size: 13px; }
+            .team-selector-bar { position: sticky; top: 0; z-index: 50; flex-wrap: wrap; }
+            .modal { align-items: flex-end; }
+            .modal-content { width: 100%; max-width: none; max-height: 92vh; border-radius: 14px 14px 0 0; padding: 16px; }
+            .cust-table thead { display: none; }
+            .cust-table, .cust-table tbody, .cust-table tr, .cust-table td { display: block; width: 100%; box-sizing: border-box; }
+            .cust-table tr { background: #fff; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; padding: 6px; }
+            .cust-table td { border: none; padding: 3px 4px; }
+            .cust-table td[data-label]::before { content: attr(data-label); display: block; font-size: 10px; color: #1a73e8; font-weight: bold; }
+            .calendar-cell { min-height: 56px; }
+            .calendar-schedule-item { font-size: 0; }
+            .calendar-schedule-item::before { content: '📝'; font-size: 12px; }
+            .preset-btn { font-size: 14px; padding: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -297,9 +329,9 @@
     </div>
 
     <!-- 📋 행사지시서 상세 정보 -->
-    <div class="section-title">
+    <div class="section-title" id="sec-info">
         <span>📋 행사지시서 상세 정보</span>
-        <button class="btn-main" onclick="openEditDirectiveModal()">📝 지시서 수정</button>
+        <div style="display:flex;gap:4px;"><button class="btn-main" style="background:#5f6368;" onclick="copyDirective()">📋 복사</button><button class="btn-main" onclick="openEditDirectiveModal()">📝 수정</button></div>
     </div>
     <table>
         <tr><th>투어 코드</th><td id="viewTourCode">-</td></tr>
@@ -316,7 +348,7 @@
         <span>👥 고객 명단 및 요청사항</span>
         <button class="btn-main" onclick="openEditDirectiveModal()">＋ 고객 편집</button>
     </div>
-    <table>
+    <table class="cust-table">
         <thead>
             <tr>
                 <th style="width: 35%;">고객 성함 (영문 / 한글)</th>
@@ -329,13 +361,13 @@
     </table>
 
     <!-- 📌 날짜별 투어 및 식사 일정 -->
-    <div class="section-title" style="margin-top: 20px;">
+    <div class="section-title" id="sec-days" style="margin-top: 20px;">
         <span>📌 선택된 날짜 기간별 투어 및 식사 일정 정리</span>
     </div>
     <div class="detail-timeline" id="detailTimelineContainer"></div>
 
     <!-- 월별 캘린더 -->
-    <div class="section-title" style="margin-top: 20px;">
+    <div class="section-title" id="sec-cal" style="margin-top: 20px;">
         <span>🗓️ 월별 캘린더</span>
     </div>
     <div class="calendar-container">
@@ -414,7 +446,7 @@
             <div id="gigaTipPreviewText" style="font-size: 11px; color: #1a73e8; margin-bottom: 12px; font-weight: bold;">연동 결과: -</div>
 
             <label style="font-size: 11px; font-weight: bold; color: #1a73e8;">고객 명단 관리 (한글 입력 시 영문 자동변환)</label>
-            <table style="margin-bottom: 8px;">
+            <table class="cust-table" style="margin-bottom: 8px;">
                 <thead>
                     <tr>
                         <th style="font-size:10px; padding:4px;">성함 (영문 / 한글)</th>
@@ -462,6 +494,9 @@
             <button class="btn-main" style="width: 100%; padding: 8px;" onclick="closePresetManageModal()">완료 (돌아가기)</button>
         </div>
     </div>
+
+    <nav class="bottom-nav"><a href="#sec-info">📋 지시서</a><a href="#sec-days">📌 일정</a><a href="#sec-cal">🗓️ 캘린더</a></nav>
+    <div id="toast"></div>
 
     <script>
         // 🔥 화면에 생성된 발급 키(phuquoc-guide) 적용 완료
@@ -551,6 +586,7 @@
                 if (data.dailySchedules) dailySchedules = data.dailySchedules;
                 if (data.tourPresetsOptions) tourPresets = data.tourPresetsOptions;
                 if (data.dropdownOptions) dropdownOptions = data.dropdownOptions;
+                migrateSchedules();
 
                 let activeExists = teamsData.some(t => t.id === activeTeamId);
                 if (!activeExists && teamsData.length > 0) {
@@ -616,6 +652,46 @@
             URL.revokeObjectURL(a.href);
         }
 
+        // ===== 공용 헬퍼 =====
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        let toastTimer;
+        function toast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800); }
+        function fmtKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+        function parseDate(s) { const p = (s || '').split('-').map(Number); return new Date(p[0], (p[1] || 1) - 1, p[2] || 1); }
+        function schedKey(teamId, dateKey) { return `${teamId}_${dateKey}`; }
+        let unsaved = {};
+        let calYear = 2026, calMonth = 9, calTeamId = null;
+
+        // 옛 형식(날짜만 키) 일정 → 팀별 키로 변환 (해당 기간 팀이 있을 때만)
+        function migrateSchedules() {
+            Object.keys(dailySchedules).forEach(k => {
+                if (/^\d{4}-\d{2}-\d{2}$/.test(k)) {
+                    const t = teamsData.find(t => t.startDate && t.endDate && k >= t.startDate && k <= t.endDate);
+                    if (t) {
+                        if (!dailySchedules[schedKey(t.id, k)]) dailySchedules[schedKey(t.id, k)] = dailySchedules[k];
+                        delete dailySchedules[k];
+                    }
+                }
+            });
+        }
+
+        function copyDirective() {
+            const t = teamsData.find(x => x.id === activeTeamId); if (!t) return;
+            const L = [`[${t.tourCode}] ${t.startDate} ~ ${t.endDate}`, `가이드: 한국 ${t.koreaGuide} / 베트남 ${t.vietnamGuide || '-'}`, `인원: ${t.paxInfo || '-'}`];
+            (t.hotels || []).forEach(h => L.push(`호텔: ${h.name} / ${h.roomType} ${h.count}객실`));
+            L.push(`정산: ${t.settlementCond || '-'}`, `기가팁: ${t.gigaTip || '-'}`, '', '[고객]');
+            (t.customers || []).forEach(c => L.push(`- ${c.enName} (${c.koName}) ${c.birth} / ${c.phone} / ${c.req}`));
+            L.push('', '[일정]');
+            let curr = parseDate(t.startDate), e = parseDate(t.endDate), n = 1;
+            while (curr <= e) {
+                const k = fmtKey(curr), s = dailySchedules[schedKey(t.id, k)];
+                if (s && typeof s === 'object') L.push(`${n}일차 (${k})`, s.tour || '', `조:${s.breakfast || '-'} 중:${s.lunch || '-'} 석:${s.dinner || '-'}` + (s.remark ? ` / 비고:${s.remark}` : ''));
+                curr.setDate(curr.getDate() + 1); n++;
+            }
+            const text = L.join('\n');
+            (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast('복사됨 📋')).catch(() => prompt('아래 내용을 복사하세요:', text));
+        }
+
         function getZodiac(year) {
             const animals = [
                 { name: "원숭이띠", icon: "🐵" }, { name: "닭띠", icon: "🐔" },
@@ -628,18 +704,19 @@
             return animals[year % 12];
         }
 
-        function calculateAgeNum(birthStr) {
-            if(!birthStr) return "-세";
-            const cleanVal = birthStr.replace(/[^0-9]/g, '');
-            const yearStr = cleanVal.substring(0, 4);
-            if (yearStr.length === 4 && !isNaN(yearStr)) {
-                const birthYear = parseInt(yearStr, 10);
-                const currentYear = new Date().getFullYear();
-                const age = currentYear - birthYear + 1;
-                const zodiac = getZodiac(birthYear);
-                return `${age}세 (${zodiac.icon} ${zodiac.name})`;
+        function calculateAgeNum(birthStr, refStr) {
+            if (!birthStr) return "-";
+            const d = birthStr.replace(/[^0-9]/g, '');
+            const y = parseInt(d.substring(0, 4), 10);
+            if (d.length < 4 || isNaN(y)) return "-";
+            const ref = refStr ? parseDate(refStr) : new Date();
+            let age = ref.getFullYear() - y;
+            if (d.length >= 8) {
+                const m = parseInt(d.substr(4, 2), 10), dd = parseInt(d.substr(6, 2), 10);
+                if (ref.getMonth() + 1 < m || (ref.getMonth() + 1 === m && ref.getDate() < dd)) age--;
             }
-            return "-세";
+            const z = getZodiac(y);
+            return `만 ${age}세 (${z.icon} ${z.name})`;
         }
 
         function convertKoToEnName(koName) {
@@ -649,12 +726,12 @@
             const firstLetterMap = { '김': 'KIM', '이': 'LEE', '박': 'PARK', '최': 'CHOI', '정': 'JUNG', '강': 'KANG', '조': 'CHO', '윤': 'YOON', '장': 'JANG', '임': 'LIM', '한': 'HAN', '오': 'OH', '서': 'SEO', '신': 'SHIN', '홍': 'HONG' };
             const syllableMap = { '가': 'KA', '나': 'NA', '다': 'DA', '라': 'RA', '마': 'MA', '바': 'BA', '사': 'SA', '아': 'A', '자': 'JA', '차': 'CHA', '카': 'KA', '타': 'TA', '파': 'PA', '하': 'HA', '길': 'GIL', '동': 'DONG', '민': 'MIN', '영': 'YEONG', '수': 'SU' };
             let firstChar = cleaned.charAt(0);
-            let lastName = firstLetterMap[firstChar] || "KIM";
+            let lastName = firstLetterMap[firstChar]; if (!lastName) return "";
             let restChars = cleaned.substring(1);
             let firstNames = [];
             for (let i = 0; i < restChars.length; i++) {
                 let ch = restChars.charAt(i);
-                firstNames.push(syllableMap[ch] || ch);
+                if (!syllableMap[ch]) return ""; firstNames.push(syllableMap[ch]);
             }
             return `${lastName}/${firstNames.join('')}`;
         }
@@ -688,31 +765,31 @@
             document.getElementById('viewTourCode').innerText = team.tourCode || "-";
             document.getElementById('viewDateRange').innerText = `${team.startDate || ""} ~ ${team.endDate || ""}`;
             document.getElementById('viewGuideInfo').innerText = `🇰🇷 한국: ${team.koreaGuide} / 🇻🇳 베트남: ${team.vietnamGuide || "없음"}`;
-            document.getElementById('viewPaxInfo').innerText = team.paxInfo || "-";
+            const px = parsePaxStringToNumbers(team.paxInfo); const cc = (team.customers || []).length;
+            document.getElementById('viewPaxInfo').innerText = (team.paxInfo || "-") + (cc !== px.adult + px.child ? ` ⚠️ 명단 ${cc}명` : '');
             
-            let hotelDisplayHtml = team.hotels.map(h => `🏨 <strong>${h.name}</strong><br>&nbsp;&nbsp;&nbsp;└ 🛏️ ${h.roomType} (${h.count}객실)`).join('<br>');
+            let hotelDisplayHtml = team.hotels.map(h => `🏨 <strong>${esc(h.name)}</strong><br>&nbsp;&nbsp;&nbsp;└ 🛏️ ${esc(h.roomType)} (${esc(h.count)}객실)`).join('<br>');
             document.getElementById('viewHotelInfo').innerHTML = hotelDisplayHtml || "-";
 
             document.getElementById('viewSettlementCond').innerText = team.settlementCond || "-";
             document.getElementById('viewGigaTip').innerText = team.gigaTip || "-";
 
-            renderViewCustomerTable(team.customers || []);
+            if (calTeamId !== teamId && team.startDate) { const p = parseDate(team.startDate); calYear = p.getFullYear(); calMonth = p.getMonth() + 1; calTeamId = teamId; }
+            renderViewCustomerTable(team.customers || [], team.startDate);
             renderDetailTimeline();
             renderScheduleCalendar();
         }
 
-        function renderViewCustomerTable(customersArray) {
+        function renderViewCustomerTable(customersArray, refDate) {
             let tbody = document.getElementById('viewCustomerTableBody');
             tbody.innerHTML = '';
             customersArray.forEach(c => {
                 let row = document.createElement('tr');
-                let ageInfo = calculateAgeNum(c.birth);
                 row.innerHTML = `
-                    <td><strong>${c.enName}</strong><br><span style="color:#555;">${c.koName}</span></td>
-                    <td>${c.birth} <span class="age-badge">${ageInfo}</span></td>
-                    <td>${c.phone}</td>
-                    <td>${c.req}</td>
-                `;
+                    <td data-label="성함"><strong>${esc(c.enName)}</strong><br><span style="color:#555;">${esc(c.koName)}</span></td>
+                    <td data-label="생년월일 / 나이">${esc(c.birth)} <span class="age-badge">${esc(calculateAgeNum(c.birth, refDate))}</span></td>
+                    <td data-label="예약번호">${esc(c.phone)}</td>
+                    <td data-label="요청사항">${esc(c.req)}</td>`;
                 tbody.appendChild(row);
             });
         }
@@ -872,7 +949,7 @@
             if(inputVal && inputVal.trim() !== "") {
                 dropdownOptions.hotelList.push(inputVal.trim());
                 saveAllToLocalStorage();
-                alert("호텔이 추가되었습니다!");
+                toast("호텔 추가됨");
             }
         }
 
@@ -886,7 +963,7 @@
                     document.getElementById('selectVietnamGuide').value,
                     document.getElementById('selectSettlementCond').value
                 );
-                alert("등록되었습니다!");
+                toast("등록됨");
             }
         }
 
@@ -928,24 +1005,21 @@
             let tbody = document.getElementById('modalCustomerTableBody');
             let row = document.createElement('tr');
             row.innerHTML = `
-                <td style="padding:4px;">
-                    <input type="text" class="m-en" value="${en}" placeholder="영문" style="margin-bottom:2px; font-size:11px;">
-                    <input type="text" class="m-ko" value="${ko}" placeholder="한글 입력 시 자동변환" style="font-size:11px;">
+                <td data-label="성함 (영문 / 한글)" style="padding:4px;">
+                    <input type="text" class="m-en" value="${esc(en)}" placeholder="영문 (여권 표기)" style="margin-bottom:2px;">
+                    <input type="text" class="m-ko" value="${esc(ko)}" placeholder="한글 (영문 비어있을 때 자동제안)">
                 </td>
-                <td style="padding:4px;"><input type="text" class="m-birth" value="${birth}" placeholder="생년월일" style="font-size:11px;"></td>
-                <td style="padding:4px;"><input type="text" class="m-phone" value="${phone}" placeholder="예약번호" style="font-size:11px;"></td>
-                <td style="padding:4px; display:flex; gap:2px;">
-                    <input type="text" class="m-req" value="${req}" placeholder="요청" style="font-size:11px; flex:1;">
+                <td data-label="생년월일" style="padding:4px;"><input type="text" class="m-birth" value="${esc(birth)}" placeholder="1990-01-01" inputmode="numeric"></td>
+                <td data-label="예약번호" style="padding:4px;"><input type="text" class="m-phone" value="${esc(phone)}" placeholder="예약번호"></td>
+                <td data-label="요청사항" style="padding:4px; display:flex; gap:2px;">
+                    <input type="text" class="m-req" value="${esc(req)}" placeholder="요청" style="flex:1;">
                     <button class="btn-del" onclick="this.closest('tr').remove()">삭제</button>
-                </td>
-            `;
+                </td>`;
             tbody.appendChild(row);
-            let koInput = row.querySelector('.m-ko');
-            let enInput = row.querySelector('.m-en');
-            koInput.oninput = function() {
-                let converted = convertKoToEnName(koInput.value);
-                if (converted) enInput.value = converted;
-            };
+            const koI = row.querySelector('.m-ko'), enI = row.querySelector('.m-en');
+            if (en) enI.dataset.manual = '1';
+            enI.oninput = () => { enI.dataset.manual = enI.value ? '1' : ''; };
+            koI.oninput = () => { if (!enI.dataset.manual) { const c = convertKoToEnName(koI.value); if (c) enI.value = c; } };
         }
 
         function addModalCustomerRow() {
@@ -962,6 +1036,7 @@
             let adultVal = parseInt(document.getElementById('modalAdultCount').value, 10);
             let childVal = parseInt(document.getElementById('modalChildCount').value, 10);
             let totalVal = adultVal + childVal;
+            if (startDateVal && endDateVal && endDateVal < startDateVal) { alert("종료일이 시작일보다 빠릅니다. 날짜를 확인해 주세요."); return; }
 
             let rawTip = document.getElementById('inputGigaTip').value.replace(/[^0-9]/g, '');
             let tipNum = rawTip !== "" ? parseInt(rawTip, 10) : 50;
@@ -1019,7 +1094,7 @@
             saveAllToLocalStorage();
             closeDirectiveModal();
             loadTeamData(activeTeamId);
-            alert("저장되었습니다!");
+            toast("저장되었습니다 ✅");
         }
 
         function addNewTeam() {
@@ -1043,7 +1118,8 @@
                 alert("최소 1개의 행사업무는 유지되어야 합니다.");
                 return;
             }
-            if (confirm("정말 삭제하시겠습니까?")) {
+            if (confirm("정말 삭제하시겠습니까? 이 행사의 일정도 함께 삭제됩니다.\n(먼저 💾 백업을 권장합니다)")) {
+                Object.keys(dailySchedules).forEach(k => { if (k.startsWith(activeTeamId + "_")) delete dailySchedules[k]; });
                 teamsData = teamsData.filter(t => t.id !== activeTeamId);
                 activeTeamId = teamsData[0].id;
                 saveAllToLocalStorage();
@@ -1051,63 +1127,52 @@
             }
         }
 
+        function readCard(card) {
+            const q = s => card.querySelector(s).value.trim();
+            return { tour: q('.f-tour'), b: q('.f-b'), l: q('.f-l'), d: q('.f-d'), r: q('.f-r') };
+        }
+
         function renderDetailTimeline() {
             const container = document.getElementById('detailTimelineContainer');
-            if(!container) return;
+            if (!container) return;
             container.innerHTML = '';
-
-            let activeTeam = teamsData.find(t => t.id === activeTeamId);
-            if(!activeTeam || !activeTeam.startDate || !activeTeam.endDate) return;
-
-            let curr = new Date(activeTeam.startDate);
-            let eDate = new Date(activeTeam.endDate);
-            let dayCount = 1;
-
-            while(curr <= eDate) {
-                let dateKey = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
-                let scheduleData = dailySchedules[dateKey];
-                
-                let tourText = '', bMeal = '', lMeal = '', dMeal = '', remarkText = '';
-                if(typeof scheduleData === 'object' && scheduleData !== null) {
-                    tourText = scheduleData.tour || '';
-                    bMeal = scheduleData.breakfast || '';
-                    lMeal = scheduleData.lunch || '';
-                    dMeal = scheduleData.dinner || '';
-                    remarkText = scheduleData.remark || '';
-                } else if(typeof scheduleData === 'string') {
-                    tourText = scheduleData;
-                }
-
-                let card = document.createElement('div');
+            const t = teamsData.find(x => x.id === activeTeamId);
+            if (!t || !t.startDate || !t.endDate) return;
+            let curr = parseDate(t.startDate), eDate = parseDate(t.endDate), dayCount = 1;
+            while (curr <= eDate) {
+                const dateKey = fmtKey(curr), sk = schedKey(t.id, dateKey);
+                const s = dailySchedules[sk], u = unsaved[sk];
+                const v = u || (typeof s === 'string' ? { tour: s, b: '', l: '', d: '', r: '' }
+                    : s ? { tour: s.tour || '', b: s.breakfast || '', l: s.lunch || '', d: s.dinner || '', r: s.remark || '' }
+                    : { tour: '', b: '', l: '', d: '', r: '' });
+                const card = document.createElement('div');
                 card.className = 'timeline-card';
+                card.id = 'card-' + sk;
                 card.innerHTML = `
                     <div class="timeline-card-header">
-                        <span>🗓️ ${dayCount}일차 (${dateKey})</span>
-                        <div style="display: flex; gap: 4px;">
-                            <button class="btn-main" style="padding: 3px 6px; font-size: 10px; background-color: #f29900;" onclick="openPresetModal('${dateKey}')">✨ 코스 선택</button>
-                            <button class="btn-main" style="padding: 3px 8px; font-size: 11px; background-color: #34a853;" onclick="saveDirectSchedule('${dateKey}', this)">저장</button>
+                        <span>🗓️ ${dayCount}일차 (${dateKey}) <span class="dirty-mark" style="color:#ea4335;font-size:11px;display:${u ? 'inline' : 'none'};">● 저장 안 됨</span></span>
+                        <div style="display:flex;gap:4px;">
+                            <button class="btn-main" style="background-color:#f29900;" onclick="openPresetModal('${dateKey}')">✨ 코스</button>
+                            <button class="btn-main" style="background-color:#34a853;" onclick="saveDirectSchedule('${dateKey}', this)">저장</button>
                         </div>
                     </div>
-                    
-                    <div style="margin-bottom: 6px;">
-                        <label style="font-size: 11px; font-weight: bold; color: #1a73e8; display: block; margin-bottom: 2px;">🌴 주요 투어 일정</label>
-                        <textarea class="timeline-textarea-${dateKey}" style="width: 100%; height: 50px; font-size: 12px; padding: 6px; box-sizing: border-box; resize: vertical;" placeholder="투어 일정을 직접 입력하거나 상단 '코스 선택' 버튼으로 채워보세요.">${tourText}</textarea>
+                    <div style="margin-bottom:6px;">
+                        <label style="font-size:11px;font-weight:bold;color:#1a73e8;display:block;margin-bottom:2px;">🌴 주요 투어 일정</label>
+                        <textarea class="f-tour" style="width:100%;height:70px;box-sizing:border-box;resize:vertical;" placeholder="직접 입력하거나 '✨ 코스' 버튼으로 채우세요.">${esc(v.tour)}</textarea>
                     </div>
-
-                    <div style="margin-bottom: 6px;">
-                        <label style="font-size: 11px; font-weight: bold; color: #1a73e8; display: block; margin-bottom: 2px;">🍱 식사 정보 (조식 / 중식 / 석식)</label>
-                        <div style="display: flex; gap: 4px;">
-                            <input type="text" class="meal-b-${dateKey}" value="${bMeal}" placeholder="🍳 조식" style="flex: 1; min-width: 0; font-size: 11px; padding: 4px;">
-                            <input type="text" class="meal-l-${dateKey}" value="${lMeal}" placeholder="🍲 중식" style="flex: 1; min-width: 0; font-size: 11px; padding: 4px;">
-                            <input type="text" class="meal-d-${dateKey}" value="${dMeal}" placeholder="🦞 석식" style="flex: 1; min-width: 0; font-size: 11px; padding: 4px;">
+                    <div style="margin-bottom:6px;">
+                        <label style="font-size:11px;font-weight:bold;color:#1a73e8;display:block;margin-bottom:2px;">🍱 식사 (조식 / 중식 / 석식)</label>
+                        <div style="display:flex;gap:4px;">
+                            <input type="text" class="f-b" value="${esc(v.b)}" placeholder="🍳 조식" style="flex:1;min-width:0;">
+                            <input type="text" class="f-l" value="${esc(v.l)}" placeholder="🍲 중식" style="flex:1;min-width:0;">
+                            <input type="text" class="f-d" value="${esc(v.d)}" placeholder="🦞 석식" style="flex:1;min-width:0;">
                         </div>
                     </div>
-
                     <div>
-                        <label style="font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 2px;">📌 비고 및 특이사항</label>
-                        <input type="text" class="remark-${dateKey}" value="${remarkText}" placeholder="옵션/차량시간/마사지 예약 등" style="font-size: 11px; padding: 4px;">
-                    </div>
-                `;
+                        <label style="font-size:11px;font-weight:bold;color:#555;display:block;margin-bottom:2px;">📌 비고 및 특이사항</label>
+                        <input type="text" class="f-r" value="${esc(v.r)}" placeholder="옵션/차량시간/마사지 예약 등">
+                    </div>`;
+                card.addEventListener('input', () => { unsaved[sk] = readCard(card); card.querySelector('.dirty-mark').style.display = 'inline'; });
                 container.appendChild(card);
                 curr.setDate(curr.getDate() + 1);
                 dayCount++;
@@ -1124,8 +1189,9 @@
                 btn.className = 'preset-btn';
                 btn.innerText = preset;
                 btn.onclick = function() {
-                    let textarea = document.querySelector(`.timeline-textarea-${targetPresetDateKey}`);
-                    if(textarea) textarea.value = preset;
+                    const card = document.getElementById('card-' + schedKey(activeTeamId, targetPresetDateKey));
+                    const textarea = card && card.querySelector('.f-tour');
+                    if (textarea) { textarea.value = preset; textarea.dispatchEvent(new Event('input', { bubbles: true })); }
                     closePresetModal();
                 };
                 container.appendChild(btn);
@@ -1163,8 +1229,8 @@
                 textInput.style.fontSize = '12px';
                 textInput.oninput = function() {
                     tourPresets[index] = textInput.value;
-                    saveAllToLocalStorage();
                 };
+                textInput.onchange = function() { saveAllToLocalStorage(); };
 
                 let delBtn = document.createElement('button');
                 delBtn.className = 'btn-del';
@@ -1189,108 +1255,84 @@
                 input.value = "";
                 saveAllToLocalStorage();
                 renderPresetManageList();
-                alert("코스가 추가되었습니다!");
+                toast("코스 추가됨");
             }
         }
 
         function saveDirectSchedule(dateKey, btnObj) {
-            let card = btnObj.closest('.timeline-card');
-            let tourVal = card.querySelector(`.timeline-textarea-${dateKey}`).value.trim();
-            let bMeal = card.querySelector(`.meal-b-${dateKey}`).value.trim();
-            let lMeal = card.querySelector(`.meal-l-${dateKey}`).value.trim();
-            let dMeal = card.querySelector(`.meal-d-${dateKey}`).value.trim();
-            let remarkVal = card.querySelector(`.remark-${dateKey}`).value.trim();
-
-            if(!tourVal && !bMeal && !lMeal && !dMeal && !remarkVal) {
-                delete dailySchedules[dateKey];
-            } else {
-                dailySchedules[dateKey] = {
-                    tour: tourVal,
-                    breakfast: bMeal,
-                    lunch: lMeal,
-                    dinner: dMeal,
-                    remark: remarkVal
-                };
-            }
+            const card = btnObj.closest('.timeline-card'), sk = schedKey(activeTeamId, dateKey), v = readCard(card);
+            if (!v.tour && !v.b && !v.l && !v.d && !v.r) delete dailySchedules[sk];
+            else dailySchedules[sk] = { tour: v.tour, breakfast: v.b, lunch: v.l, dinner: v.d, remark: v.r };
+            delete unsaved[sk];
+            card.querySelector('.dirty-mark').style.display = 'none';
             saveAllToLocalStorage();
             renderScheduleCalendar();
-            alert(`[${dateKey}] 일정 및 식사 정보가 저장되었습니다!`);
+            toast(`${dateKey} 저장됨 ✅`);
+        }
+
+        function changeMonth(delta) {
+            calMonth += delta;
+            if (calMonth < 1) { calMonth = 12; calYear--; }
+            if (calMonth > 12) { calMonth = 1; calYear++; }
+            renderScheduleCalendar();
+        }
+
+        function goToDay(teamId, dateKey) {
+            if (teamId !== activeTeamId) loadTeamData(teamId);
+            const el = document.getElementById('card-' + schedKey(teamId, dateKey));
+            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.boxShadow = '0 0 0 3px #f29900'; setTimeout(() => el.style.boxShadow = '', 1500); }
         }
 
         function renderScheduleCalendar() {
             const grid = document.getElementById('scheduleCalendarGrid');
-            if(!grid) return;
+            if (!grid) return;
             grid.innerHTML = '';
-
-            let activeTeam = teamsData.find(t => t.id === activeTeamId);
-            let targetYear = 2026, targetMonth = 9;
-            if(activeTeam && activeTeam.startDate) {
-                let p = activeTeam.startDate.split('-');
-                if(p.length >= 2) {
-                    targetYear = parseInt(p[0], 10);
-                    targetMonth = parseInt(p[1], 10);
-                    document.getElementById('calendarHeaderTitle').innerText = `${targetYear}년 ${targetMonth}월 행사 일정표`;
-                }
-            }
-
-            const daysName = ['일', '월', '화', '수', '목', '금', '토'];
-            daysName.forEach(day => {
+            document.getElementById('calendarHeaderTitle').innerHTML = `<button class="cal-nav" onclick="changeMonth(-1)">◀</button><span>${calYear}년 ${calMonth}월 행사 일정표</span><button class="cal-nav" onclick="changeMonth(1)">▶</button>`;
+            ['일', '월', '화', '수', '목', '금', '토'].forEach(day => {
                 let div = document.createElement('div');
                 div.className = 'calendar-day-name';
                 div.innerText = day;
                 grid.appendChild(div);
             });
-
-            let firstDayIndex = new Date(targetYear, targetMonth - 1, 1).getDay();
-            let totalDays = new Date(targetYear, targetMonth, 0).getDate();
-
-            for (let i = 0; i < firstDayIndex; i++) {
-                grid.appendChild(document.createElement('div')).className = 'calendar-cell';
-            }
+            const firstDayIndex = new Date(calYear, calMonth - 1, 1).getDay();
+            const totalDays = new Date(calYear, calMonth, 0).getDate();
+            const todayKey = fmtKey(new Date());
+            for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement('div')).className = 'calendar-cell';
 
             for (let d = 1; d <= totalDays; d++) {
                 let cell = document.createElement('div');
                 cell.className = 'calendar-cell';
-                let dateKey = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-
+                const dateKey = `${calYear}-${String(calMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                if (dateKey === todayKey) cell.classList.add('today');
                 let numDiv = document.createElement('div');
                 numDiv.className = 'day-number';
                 numDiv.innerText = d;
                 cell.appendChild(numDiv);
 
                 teamsData.forEach(team => {
-                    if (team.startDate && team.endDate && new Date(dateKey) >= new Date(team.startDate) && new Date(dateKey) <= new Date(team.endDate)) {
-                        let badge = document.createElement('div');
-                        badge.className = 'calendar-event-badge';
-                        if(team.id === activeTeamId) badge.style.background = '#34a853';
-                        badge.innerText = `🌴 ${team.tourCode}`;
-                        cell.appendChild(badge);
-                    }
-                });
-
-                if (dailySchedules[dateKey]) {
-                    let item = document.createElement('div');
-                    item.className = 'calendar-schedule-item';
-                    
-                    let sched = dailySchedules[dateKey];
-                    let displayText = '';
-                    if(typeof sched === 'object' && sched !== null) {
-                        displayText = sched.tour || '';
-                        let meals = [];
-                        if(sched.breakfast) meals.push(`조:${sched.breakfast}`);
-                        if(sched.lunch) meals.push(`중:${sched.lunch}`);
-                        if(sched.dinner) meals.push(`석:${sched.dinner}`);
-                        if(meals.length > 0) {
-                            displayText += (displayText ? '\n' : '') + `🍱 ` + meals.join(' / ');
+                    if (!(team.startDate && team.endDate && dateKey >= team.startDate && dateKey <= team.endDate)) return;
+                    let badge = document.createElement('div');
+                    badge.className = 'calendar-event-badge';
+                    if (team.id === activeTeamId) badge.style.background = '#34a853';
+                    badge.innerText = `🌴 ${team.tourCode}`;
+                    cell.appendChild(badge);
+                    const s = dailySchedules[schedKey(team.id, dateKey)];
+                    if (s) {
+                        let text = typeof s === 'object' ? (s.tour || '') : s;
+                        if (typeof s === 'object') {
+                            const meals = [];
+                            if (s.breakfast) meals.push(`조:${s.breakfast}`);
+                            if (s.lunch) meals.push(`중:${s.lunch}`);
+                            if (s.dinner) meals.push(`석:${s.dinner}`);
+                            if (meals.length) text += (text ? '\n' : '') + '🍱 ' + meals.join(' / ');
                         }
-                    } else {
-                        displayText = sched;
+                        let item = document.createElement('div');
+                        item.className = 'calendar-schedule-item';
+                        item.innerText = text;
+                        cell.appendChild(item);
                     }
-
-                    item.innerText = displayText;
-                    cell.appendChild(item);
-                }
-
+                    if (!cell.onclick || team.id === activeTeamId) { cell.style.cursor = 'pointer'; cell.onclick = () => goToDay(team.id, dateKey); }
+                });
                 grid.appendChild(cell);
             }
         }
